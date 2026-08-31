@@ -1,0 +1,26 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of the kcworks-import-client package.
+# Copyright (C) 2024-2026, MESH Research.
+#
+# kcworks-import-client is free software; you can redistribute it
+# and/or modify it under the terms of the MIT License; see
+# LICENSE file for more details.
+
+include *.md
+include *.sh
+include *.txt
+include VERSION
+include LICENSE
+include .gitignore
+exclude .DS_Store
+recursive-include docs *.md
+recursive-include docs *.py
+recursive-include docs Makefile
+recursive-include docs .gitkeep
+recursive-include tests *.py
+recursive-include tests/helpers/sample_files *
+recursive-exclude tests .DS_Store
+recursive-include kcworks_import_client *.py
+recursive-exclude kcworks_import_client .DS_Store
+recursive-exclude docs/build *
