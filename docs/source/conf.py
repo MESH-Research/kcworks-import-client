@@ -23,6 +23,10 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = []
 
+# Example response bodies in import_api.md use illustrative / pseudo-JSON
+# (multi-line Python-style strings); do not fail the build on lexer retries.
+suppress_warnings = ["misc.highlighting_failure"]
+
 autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 4
 
