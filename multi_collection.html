@@ -3,10 +3,10 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Changelog" href="changelog.html"><link rel="prev" title="Single-collection CLI" href="cli.html">
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Changelog" href="changelog.html"><link rel="prev" title="Using the single-collection importer" href="cli.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>Multi-collection CLI - kcworks-import-client 0.1.0 documentation</title>
+        <title>Using the multi-collection importer - kcworks-import-client 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -193,9 +193,10 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="import_api.html">Streamlined Import API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="library.html">Library API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">Single-collection CLI</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Multi-collection CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Using the single-collection importer</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Using the multi-collection importer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 
@@ -239,19 +240,10 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="multi-collection-cli">
-<h1>Multi-collection CLI<a class="headerlink" href="#multi-collection-cli" title="Link to this heading">¶</a></h1>
-<p id="kcworks-multi-collection-importer-script"><code class="docutils literal notranslate"><span class="pre">kcworks-multi-collection-importer</span></code> (module
-<code class="docutils literal notranslate"><span class="pre">kcworks_import_client.multi_collection_importer</span></code>) reads a JSON or YAML
-<strong>manifest</strong>, creates any missing collections via the communities API,
-optionally links parent/child collections, and then imports each batch with
-the same logic as the single-collection importer.</p>
-<p>Install with the <code class="docutils literal notranslate"><span class="pre">yaml</span></code> extra if you use YAML manifests:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[yaml]"</span>
-</pre></div>
-</div>
-<p>For application code, prefer <code class="docutils literal notranslate"><span class="pre">MultiCollectionImporter</span></code> from <a class="reference internal" href="library.html"><span class="doc">Library API</span></a>
-(<code class="docutils literal notranslate"><span class="pre">run_manifest(...)</span></code>).</p>
+          <section id="using-the-multi-collection-importer">
+<h1>Using the multi-collection importer<a class="headerlink" href="#using-the-multi-collection-importer" title="Link to this heading">¶</a></h1>
+<p id="kcworks-multi-collection-importer-script">For bulk imports that span multiple collections, use <a class="reference external" href="https://github.com/MESH-Research/kcworks-import-client"><code class="docutils literal notranslate"><span class="pre">kcworks-multi-collection-importer</span></code></a> (<code class="docutils literal notranslate"><span class="pre">kcworks_import_client.multi_collection_importer</span></code>). Install with the <code class="docutils literal notranslate"><span class="pre">yaml</span></code> extra if you use YAML manifests (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">&quot;.[yaml]&quot;</span></code>). It reads a JSON or YAML <strong>manifest</strong>, creates any missing collections via the communities API, optionally links parent/child collections, and then calls the same import logic as the single-collection importer for each entry.</p>
+<p>The single-collection importer remains usable on its own. The multi-collection wrapper is for when you want one command driven by a manifest.</p>
 <section id="manifest-format">
 <h2>Manifest format<a class="headerlink" href="#manifest-format" title="Link to this heading">¶</a></h2>
 <p>YAML example:</p>
@@ -296,39 +288,26 @@ the same logic as the single-collection importer.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Relative paths are resolved against the manifest file’s directory.</p>
-<p>Each collection <strong>slug</strong> may appear only once per manifest (one create/link/import
-batch). Duplicate slugs are not supported as multiple batches; later rows for
-the same slug silently override earlier ones. For additional batches into the
-same collection, use another manifest run or the single-collection importer.</p>
-<section id="optional-per-entry-fields">
-<h3>Optional per-entry fields<a class="headerlink" href="#optional-per-entry-fields" title="Link to this heading">¶</a></h3>
+<p>Relative paths in the manifest are resolved against the manifest file’s directory. YAML manifests require <a class="reference external" href="https://pyyaml.org/">PyYAML</a>.</p>
+<p>Each collection <strong>slug</strong> may appear only once in a given manifest. The importer treats that as a single create/link/import batch for that collection. Duplicate slugs are not supported as multiple batches (later rows silently override earlier ones for the same slug). To import more records into a collection later, use another manifest run or the single-collection importer.</p>
+<p>Optional per-entry fields:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">id_scheme</span></code> / <code class="docutils literal notranslate"><span class="pre">alternate_id_scheme</span></code> — override CLI defaults. Schemes must
-already be defined in KCWorks (<code class="docutils literal notranslate"><span class="pre">RDM_RECORDS_IDENTIFIERS_SCHEMES</span></code>), or
-arranged with the KCWorks team before import.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">notify_record_owners</span></code> — <code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code>; overrides <code class="docutils literal notranslate"><span class="pre">--notify-record-owners</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">no_updates</span></code> — <code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code>; overrides <code class="docutils literal notranslate"><span class="pre">--no-updates</span></code>. Default allows
-metadata updates on existing matches (server reconciles files by filename
-and size).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id_scheme</span></code> / <code class="docutils literal notranslate"><span class="pre">alternate_id_scheme</span></code> — override the CLI defaults for that collection. Schemes must already be defined in KCWorks (<code class="docutils literal notranslate"><span class="pre">RDM_RECORDS_IDENTIFIERS_SCHEMES</span></code>), or arranged with the KCWorks team for addition before import.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">notify_record_owners</span></code> — <code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code> for that collection; overrides <code class="docutils literal notranslate"><span class="pre">--notify-record-owners</span></code> for the entry.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">no_updates</span></code> — <code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code> for that collection; overrides <code class="docutils literal notranslate"><span class="pre">--no-updates</span></code> for the entry. Default is to allow metadata updates on existing matches (with file reconciliation as in <a class="reference internal" href="import_api.html#import-existing-record-files"><span class="std std-ref">Files when re-importing an existing work (no_updates is &quot;false&quot;)</span></a>).</p></li>
 </ul>
-</section>
 </section>
 <section id="parent-child-links">
 <h2>Parent / child links<a class="headerlink" href="#parent-child-links" title="Link to this heading">¶</a></h2>
-<p>With <code class="docutils literal notranslate"><span class="pre">--assign-parents</span></code>, entries that list <code class="docutils literal notranslate"><span class="pre">parent_slug</span></code> are linked under that
-parent. The client:</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">--assign-parents</span></code>, entries that list <code class="docutils literal notranslate"><span class="pre">parent_slug</span></code> are linked under that parent. The script:</p>
 <ol class="arabic simple">
-<li><p>Ensures the parent has <code class="docutils literal notranslate"><span class="pre">children.allow=true</span></code> (collection owners can set this
-on KCWorks).</p></li>
-<li><p>Submits a subcommunity <strong>join-request</strong>. When the OAuth user owns both
-collections, the request is <strong>auto-accepted</strong>.</p></li>
+<li><p>Ensures the parent has <code class="docutils literal notranslate"><span class="pre">children.allow=true</span></code> (collection owners can set this on KCWorks).</p></li>
+<li><p>Submits a subcommunity <strong>join-request</strong>. When the OAuth user owns both collections, the request is <strong>auto-accepted</strong> and the link is created immediately.</p></li>
 </ol>
-<p>See the KCWorks operator guide:
-<a class="reference external" href="https://mesh-research.github.io/knowledge-commons-works/admin_guide/collection_hierarchy.html">Collection hierarchy</a>.</p>
+<p>See <a class="reference external" href="https://mesh-research.github.io/knowledge-commons-works/admin_guide/collection_hierarchy.html">Collection hierarchy and subcollection requests</a> for the full operator documentation on collection hierarchy.</p>
 </section>
 <section id="command-line-arguments">
-<h2>Command-line arguments<a class="headerlink" href="#command-line-arguments" title="Link to this heading">¶</a></h2>
+<h2>Command-Line Arguments<a class="headerlink" href="#command-line-arguments" title="Link to this heading">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -338,44 +317,35 @@ collections, the request is <strong>auto-accepted</strong>.</p></li>
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--api-key</span> <span class="pre">KEY</span></code></p></td>
-<td><p>API key (or <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_API_KEY</span></code>, or prompt).</p></td>
+<td><p>API key (or <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_API_KEY</span></code>, or interactive prompt).</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--manifest</span> <span class="pre">PATH</span></code></p></td>
-<td><p>JSON/YAML manifest (or <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_MANIFEST_PATH</span></code>, or prompt).</p></td>
+<td><p>Path to the JSON/YAML manifest (or <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_MANIFEST_PATH</span></code>, or interactive prompt).</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--assign-parents</span></code></p></td>
 <td><p>Create parent/child links for entries that list <code class="docutils literal notranslate"><span class="pre">parent_slug</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--testing</span></code></p></td>
-<td><p>Use local testing instance (<code class="docutils literal notranslate"><span class="pre">https://localhost</span></code>).</p></td>
+<td><p>Use a local testing instance (<code class="docutils literal notranslate"><span class="pre">https://localhost</span></code>).</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--notify-record-owners</span></code></p></td>
-<td><p>Default notify flag for entries without <code class="docutils literal notranslate"><span class="pre">notify_record_owners</span></code>.</p></td>
+<td><p>Default notify flag for entries that do not set <code class="docutils literal notranslate"><span class="pre">notify_record_owners</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--id-scheme</span> <span class="pre">SCHEME</span></code></p></td>
-<td><p>Default dedupe scheme (default: <code class="docutils literal notranslate"><span class="pre">import-recid</span></code>); overridable per entry.</p></td>
+<td><p>Default import dedupe scheme (default: <code class="docutils literal notranslate"><span class="pre">import-recid</span></code>); overridable per entry.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--alternate-id-scheme</span></code></p></td>
-<td><p>Default secondary scheme; overridable per entry.</p></td>
+<td><p>Default secondary dedupe scheme; overridable per entry.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--no-updates</span></code></p></td>
-<td><p>Default block on metadata updates for existing matches; overridable per entry.</p></td>
+<td><p>Default block on metadata updates for existing matches; overridable per entry. Default: allow updates (see <a class="reference internal" href="import_api.html#import-existing-record-files"><span class="std std-ref">Files when re-importing an existing work (no_updates is &quot;false&quot;)</span></a> for files).</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 </section>
-<section id="environment-variables">
-<h2>Environment variables<a class="headerlink" href="#environment-variables" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_API_KEY</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_MANIFEST_PATH</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_API_URL</span></code> — import base; communities base derived when set</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_COMMUNITIES_API_URL</span></code> — communities base override</p></li>
-</ul>
-</section>
 <section id="usage-example">
-<h2>Usage example<a class="headerlink" href="#usage-example" title="Link to this heading">¶</a></h2>
+<h2>Usage Example<a class="headerlink" href="#usage-example" title="Link to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kcworks-multi-collection-importer<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--api-key<span class="w"> </span><span class="s2">"your-api-key"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--manifest<span class="w"> </span><span class="s2">"import_manifest.yaml"</span><span class="w"> </span><span class="se">\</span>
@@ -406,7 +376,7 @@ collections, the request is <strong>auto-accepted</strong>.</p></li>
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Single-collection CLI</div>
+                <div class="title">Using the single-collection importer</div>
                 
               </div>
             </a>
@@ -447,15 +417,11 @@ collections, the request is <strong>auto-accepted</strong>.</p></li>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Multi-collection CLI</a><ul>
-<li><a class="reference internal" href="#manifest-format">Manifest format</a><ul>
-<li><a class="reference internal" href="#optional-per-entry-fields">Optional per-entry fields</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Using the multi-collection importer</a><ul>
+<li><a class="reference internal" href="#manifest-format">Manifest format</a></li>
 <li><a class="reference internal" href="#parent-child-links">Parent / child links</a></li>
-<li><a class="reference internal" href="#command-line-arguments">Command-line arguments</a></li>
-<li><a class="reference internal" href="#environment-variables">Environment variables</a></li>
-<li><a class="reference internal" href="#usage-example">Usage example</a></li>
+<li><a class="reference internal" href="#command-line-arguments">Command-Line Arguments</a></li>
+<li><a class="reference internal" href="#usage-example">Usage Example</a></li>
 </ul>
 </li>
 </ul>

@@ -3,10 +3,10 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Multi-collection CLI" href="multi_collection.html"><link rel="prev" title="Library API" href="library.html">
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Using the multi-collection importer" href="multi_collection.html"><link rel="prev" title="Library API" href="library.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>Single-collection CLI - kcworks-import-client 0.1.0 documentation</title>
+        <title>Using the single-collection importer - kcworks-import-client 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -193,9 +193,10 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="import_api.html">Streamlined Import API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="library.html">Library API</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Single-collection CLI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="multi_collection.html">Multi-collection CLI</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Using the single-collection importer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multi_collection.html">Using the multi-collection importer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 
@@ -239,15 +240,41 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="single-collection-cli">
-<h1>Single-collection CLI<a class="headerlink" href="#single-collection-cli" title="Link to this heading">¶</a></h1>
-<p id="kcworks-api-importer-script">The <code class="docutils literal notranslate"><span class="pre">kcworks-api-importer</span></code> command (module
-<code class="docutils literal notranslate"><span class="pre">kcworks_import_client.api_importer</span></code>) handles authentication, file uploads,
-multipart form encoding, and human-readable success/error messages for a
-<strong>single</strong> collection.</p>
-<p>For embedding in applications, use <a class="reference internal" href="library.html"><span class="doc">Library API</span></a> instead.</p>
+          <section id="using-the-single-collection-importer">
+<h1>Using the single-collection importer<a class="headerlink" href="#using-the-single-collection-importer" title="Link to this heading">¶</a></h1>
+<p id="kcworks-api-importer-script">KCWorks provides a standalone Python package that simplifies the process of importing works via the import API. The package (<a class="reference external" href="https://github.com/MESH-Research/kcworks-import-client"><code class="docutils literal notranslate"><span class="pre">kcworks-import-client</span></code></a>, module <code class="docutils literal notranslate"><span class="pre">kcworks_import_client</span></code>) handles authentication, file uploads, multipart form data encoding, and provides human-readable success and error messages.</p>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h2>
+<p>The client requires Python 3.12 or later and the <code class="docutils literal notranslate"><span class="pre">requests</span></code> library. Install from this package directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+<span class="c1"># or with uv:</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<p>This installs the <code class="docutils literal notranslate"><span class="pre">kcworks-api-importer</span></code> and <code class="docutils literal notranslate"><span class="pre">kcworks-multi-collection-importer</span></code> console commands.</p>
+</section>
+<section id="library-api">
+<h2>Library API<a class="headerlink" href="#library-api" title="Link to this heading">¶</a></h2>
+<p>Applications can import service classes instead of shelling out to the CLI:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">kcworks_import_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImportClient</span><span class="p">,</span> <span class="n">MultiCollectionImporter</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">ImportClient</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">"..."</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">import_works</span><span class="p">(</span>
+    <span class="s2">"my-collection"</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="p">[{</span><span class="s2">"metadata"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"title"</span><span class="p">:</span> <span class="s2">"Example"</span><span class="p">}}],</span>  <span class="c1"># path, JSON str, list, or dict</span>
+    <span class="n">files</span><span class="o">=</span><span class="p">[</span><span class="s2">"paper.pdf"</span><span class="p">],</span>  <span class="c1"># paths or (filename, fileobj[, mime]) tuples</span>
+<span class="p">)</span>
+<span class="c1"># result.ok, result.status_code, result.data, result.errors</span>
+
+<span class="n">importer</span> <span class="o">=</span> <span class="n">MultiCollectionImporter</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">"..."</span><span class="p">)</span>
+<span class="n">multi</span> <span class="o">=</span> <span class="n">importer</span><span class="o">.</span><span class="n">run_manifest</span><span class="p">(</span><span class="s2">"manifest.json"</span><span class="p">,</span> <span class="n">assign_parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">ImportResult</span></code> / <code class="docutils literal notranslate"><span class="pre">MultiCollectionImportResult</span></code> are returned for HTTP outcomes; transport failures raise <code class="docutils literal notranslate"><span class="pre">ImportRequestError</span></code>. Prefer these classes over the CLI-oriented <code class="docutils literal notranslate"><span class="pre">import_works(...)</span></code> helper (which prints status and returns an exit code).</p>
+</section>
 <section id="command-line-arguments">
-<h2>Command-line arguments<a class="headerlink" href="#command-line-arguments" title="Link to this heading">¶</a></h2>
+<h2>Command-Line Arguments<a class="headerlink" href="#command-line-arguments" title="Link to this heading">¶</a></h2>
+<p>The script accepts the following command-line arguments:</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -257,53 +284,53 @@ multipart form encoding, and human-readable success/error messages for a
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--api-key</span> <span class="pre">KEY</span></code></p></td>
-<td><p>API key. If omitted: <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_API_KEY</span></code>, or interactive prompt.</p></td>
+<td><p>API key for authentication. If not provided, checks <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_API_KEY</span></code> environment variable, or prompts interactively.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--collection-id</span> <span class="pre">ID</span></code></p></td>
-<td><p>Collection ID or slug. If omitted: <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_COLLECTION_ID</span></code>, or prompt.</p></td>
+<td><p>Collection ID or slug to import records into. If not provided, checks <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_COLLECTION_ID</span></code> environment variable, or prompts interactively.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--metadata</span> <span class="pre">PATH</span></code></p></td>
-<td><p>Path to metadata JSON (array of objects, even for one record). If omitted: <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_METADATA_PATH</span></code>, or prompt.</p></td>
+<td><p>Path to the metadata JSON file. The metadata must be a JSON array of metadata objects, even if importing a single record. If not provided, checks <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_METADATA_PATH</span></code> environment variable, or prompts interactively.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--files</span> <span class="pre">PATH</span> <span class="pre">[PATH</span> <span class="pre">...]</span></code></p></td>
-<td><p>One or more file paths. If omitted: <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_FILES_PATH</span></code> (comma/space-separated), or prompt.</p></td>
+<td><p>One or more file paths to upload with the records. Multiple files can be specified by providing multiple arguments. If not provided, checks <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_FILES_PATH</span></code> environment variable (comma or space-separated), or prompts interactively.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--output</span> <span class="pre">PATH</span></code></p></td>
-<td><p>Optional path to save the API response JSON. If omitted: <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_OUTPUT_PATH</span></code>, or optional prompt.</p></td>
+<td><p>Optional path to save the API response as JSON. If not provided, checks <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_OUTPUT_PATH</span></code> environment variable, or prompts interactively (can be skipped by pressing Enter).</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--testing</span></code></p></td>
 <td><p>Use a local testing instance (<code class="docutils literal notranslate"><span class="pre">https://localhost</span></code>).</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--notify-record-owners</span></code></p></td>
-<td><p>Email users listed as record owners. Default: off.</p></td>
+<td><p>Send email notifications to users listed as record owners in metadata. Default: off.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--id-scheme</span> <span class="pre">SCHEME</span></code></p></td>
-<td><p>Import dedupe scheme (default: <code class="docutils literal notranslate"><span class="pre">import-recid</span></code>). Must be defined in KCWorks or pre-arranged.</p></td>
+<td><p>Identifier scheme for import deduplication (default: <code class="docutils literal notranslate"><span class="pre">import-recid</span></code>). Must be defined in KCWorks or pre-arranged for addition.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--alternate-id-scheme</span></code></p></td>
-<td><p>Optional secondary dedupe scheme. Same constraint as <code class="docutils literal notranslate"><span class="pre">--id-scheme</span></code>.</p></td>
+<td><p>Optional secondary identifier scheme for deduplication. Same constraint as <code class="docutils literal notranslate"><span class="pre">--id-scheme</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--no-updates</span></code></p></td>
-<td><p>Refuse to change an existing matched record when <strong>metadata</strong> differs (skips file reconciliation in that case). Default: allow metadata updates; files follow filename+size rules on the server.</p></td>
+<td><p>Refuse to change an existing matched record when <strong>metadata</strong> differs (skips file reconciliation in that case). Default: allow metadata updates; files then follow the key/size rules under <a class="reference internal" href="import_api.html#import-existing-record-files"><span class="std std-ref">Files when re-importing an existing work (no_updates is &quot;false&quot;)</span></a>.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 </section>
 <section id="environment-variables">
-<h2>Environment variables<a class="headerlink" href="#environment-variables" title="Link to this heading">¶</a></h2>
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading">¶</a></h2>
+<p>All command-line arguments can also be provided via environment variables:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_API_KEY</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_COLLECTION_ID</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_METADATA_PATH</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_FILES_PATH</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_OUTPUT_PATH</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_API_URL</span></code> — override import API base (disables SSL verify)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_API_KEY</span></code> - API key for authentication</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_COLLECTION_ID</span></code> - Collection ID or slug</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_METADATA_PATH</span></code> - Path to metadata JSON file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_FILES_PATH</span></code> - File paths, comma or space-separated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_OUTPUT_PATH</span></code> - Path to save response JSON</p></li>
 </ul>
 </section>
 <section id="usage-examples">
-<h2>Usage examples<a class="headerlink" href="#usage-examples" title="Link to this heading">¶</a></h2>
-<p><strong>Basic usage:</strong></p>
+<h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading">¶</a></h2>
+<p><strong>Basic usage with all arguments:</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kcworks-api-importer<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--api-key<span class="w"> </span><span class="s2">"your-api-key"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--collection-id<span class="w"> </span><span class="s2">"my-collection"</span><span class="w"> </span><span class="se">\</span>
@@ -312,7 +339,7 @@ multipart form encoding, and human-readable success/error messages for a
 <span class="w">  </span>--output<span class="w"> </span><span class="s2">"response.json"</span>
 </pre></div>
 </div>
-<p><strong>Environment variables:</strong></p>
+<p><strong>Using environment variables:</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">KCWORKS_IMPORT_API_KEY</span><span class="o">=</span><span class="s2">"your-api-key"</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">KCWORKS_IMPORT_COLLECTION_ID</span><span class="o">=</span><span class="s2">"my-collection"</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">KCWORKS_IMPORT_METADATA_PATH</span><span class="o">=</span><span class="s2">"metadata.json"</span>
@@ -320,34 +347,34 @@ multipart form encoding, and human-readable success/error messages for a
 python<span class="w"> </span>-m<span class="w"> </span>kcworks_import_client.api_importer<span class="w"> </span>--output<span class="w"> </span><span class="s2">"response.json"</span>
 </pre></div>
 </div>
-<p><strong>Interactive mode:</strong></p>
+<p><strong>Interactive mode (will prompt for missing values):</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>kcworks_import_client.api_importer
+</pre></div>
+</div>
+<p><strong>Single file upload:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>kcworks_import_client.api_importer<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--api-key<span class="w"> </span><span class="s2">"your-api-key"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--collection-id<span class="w"> </span><span class="s2">"my-collection"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--metadata<span class="w"> </span><span class="s2">"metadata.json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--files<span class="w"> </span><span class="s2">"document.pdf"</span>
 </pre></div>
 </div>
 </section>
 <section id="response-handling">
-<h2>Response handling<a class="headerlink" href="#response-handling" title="Link to this heading">¶</a></h2>
+<h2>Response Handling<a class="headerlink" href="#response-handling" title="Link to this heading">¶</a></h2>
+<p>The script provides human-readable output for both successful and failed imports:</p>
 <ul class="simple">
-<li><p><strong>Success (201)</strong> — checkmark, record IDs, URLs</p></li>
-<li><p><strong>Partial success (207)</strong> — warning plus successful and failed records</p></li>
-<li><p><strong>Failure (400, 403, 500)</strong> — error summary and per-record details</p></li>
+<li><p><strong>Success (201)</strong>: Shows checkmark, number of records imported, record IDs, and URLs</p></li>
+<li><p><strong>Partial success (207)</strong>: Shows warning, lists successful and failed records with error details</p></li>
+<li><p><strong>Failure (400, 403, 500)</strong>: Shows error message, explains the issue, and lists failed records with specific errors</p></li>
 </ul>
-<p>If <code class="docutils literal notranslate"><span class="pre">--output</span></code> is set, the full response is written as JSON (or plain text if
-not JSON).</p>
+<p>If an output path is provided, the full API response is also saved to that file as formatted JSON (or plain text if the response is not JSON).</p>
 </section>
 <section id="exit-codes">
-<h2>Exit codes<a class="headerlink" href="#exit-codes" title="Link to this heading">¶</a></h2>
+<h2>Exit Codes<a class="headerlink" href="#exit-codes" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">0</span></code> — Success (HTTP 201 or 207)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> — Error (invalid input, missing files, API/transport failure, etc.)</p></li>
-</ul>
-</section>
-<section id="server-api-details">
-<h2>Server API details<a class="headerlink" href="#server-api-details" title="Link to this heading">¶</a></h2>
-<p>Metadata shape, ownership fields, dedupe identifiers, and file reconciliation
-when re-importing are defined by the KCWorks import HTTP API:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://mesh-research.github.io/knowledge-commons-works/reference/api.html">KCWorks API reference — Streamlined Import API</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">0</span></code> - Success</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> - Error (invalid input, file not found, API error, etc.)</p></li>
 </ul>
 </section>
 </section>
@@ -362,7 +389,7 @@ when re-importing are defined by the KCWorks import HTTP API:</p>
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Multi-collection CLI</div>
+                <div class="title">Using the multi-collection importer</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -414,13 +441,14 @@ when re-importing are defined by the KCWorks import HTTP API:</p>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Single-collection CLI</a><ul>
-<li><a class="reference internal" href="#command-line-arguments">Command-line arguments</a></li>
-<li><a class="reference internal" href="#environment-variables">Environment variables</a></li>
-<li><a class="reference internal" href="#usage-examples">Usage examples</a></li>
-<li><a class="reference internal" href="#response-handling">Response handling</a></li>
-<li><a class="reference internal" href="#exit-codes">Exit codes</a></li>
-<li><a class="reference internal" href="#server-api-details">Server API details</a></li>
+<li><a class="reference internal" href="#">Using the single-collection importer</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#library-api">Library API</a></li>
+<li><a class="reference internal" href="#command-line-arguments">Command-Line Arguments</a></li>
+<li><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+<li><a class="reference internal" href="#usage-examples">Usage Examples</a></li>
+<li><a class="reference internal" href="#response-handling">Response Handling</a></li>
+<li><a class="reference internal" href="#exit-codes">Exit Codes</a></li>
 </ul>
 </li>
 </ul>

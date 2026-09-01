@@ -1,0 +1,1014 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Library API" href="library.html"><link rel="prev" title="Installation" href="installation.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Streamlined Import API - kcworks-import-client 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">kcworks-import-client 0.1.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <span class="sidebar-brand-text">kcworks-import-client 0.1.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Streamlined Import API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="library.html">Library API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Using the single-collection importer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multi_collection.html">Using the multi-collection importer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/MESH-Research/kcworks-import-client/blob/main/docs/source/import_api.md?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/MESH-Research/kcworks-import-client/edit/main/docs/source/import_api.md" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="streamlined-import-api">
+<h1>Streamlined Import API<a class="headerlink" href="#streamlined-import-api" title="Link to this heading">¶</a></h1>
+<p>This chapter documents the KCWorks <strong>HTTP import API</strong> that this package calls.
+It is adapted from the KCWorks instance documentation so client users have the
+full narrative without leaving this package.</p>
+<p>In order to streamline the process of uploading works to KCWorks, particularly for works intended for publication in a collection, KCWorks provides a streamlined import API. This API allows clients to upload a work and its files in a single step, without the need to create a draft record, initialize file uploads, commit file uploads, or submit a review request.</p>
+<p>Why is this API needed? The InvenioRDM REST API can be fragile and difficult to use, particularly for clients who are not familiar with the system. The creation and acceptance of a review request is redundant where collection administrators are uploading works for a collection they administer. The file upload steps are also not truly stateless, introducing the possibility of a file upload being interrupted and left incomplete, even if the upload of the file’s content was successful.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This package (<code class="docutils literal notranslate"><span class="pre">kcworks-import-client</span></code>) simplifies using the import API (library
+classes and CLI). The single-collection importer handles authentication, file
+uploads, and response formatting automatically. See
+<a class="reference internal" href="cli.html#kcworks-api-importer-script"><span class="std std-ref">the single-collection importer</span></a> and
+<a class="reference internal" href="multi_collection.html#kcworks-multi-collection-importer-script"><span class="std std-ref">the multi-collection importer</span></a>.</p>
+</div>
+<section id="who-can-use-the-import-api">
+<h2>Who can use the import API?<a class="headerlink" href="#who-can-use-the-import-api" title="Link to this heading">¶</a></h2>
+<p>The import API is available to authorized organizations who have obtained an OAuth token for API operations. The import API places the works directly in a collection, without passing through the review process. So, the user to whom the token is issued must have sufficient permissions to publish directly in the collection. The exact role required depends on the collection’s review policy:</p>
+<ul class="simple">
+<li><p><em>If the review policy allows managers and curators to skip the review process</em>, the user of the import API must have one of the roles “manager,” “curator,” or “owner” in the collection.</p></li>
+<li><p><em>If the review policy requires all submissions to be reviewed</em>, the user of the import API must have the “owner” role in the collection.</p></li>
+</ul>
+</section>
+<section id="the-import-request">
+<h2>The import request<a class="headerlink" href="#the-import-request" title="Link to this heading">¶</a></h2>
+<section id="request">
+<h3>Request<a class="headerlink" href="#request" title="Link to this heading">¶</a></h3>
+<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">https://works.hcommons.org/api/import/&lt;my-collection-id&gt;</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+</pre></div>
+</div>
+</section>
+<section id="required-headers">
+<h3>Required headers<a class="headerlink" href="#required-headers" title="Link to this heading">¶</a></h3>
+<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="err">Content-Type: multipart/form-data</span>
+<span class="err">Accept: application/json</span>
+<span class="err">Authorization: Bearer &lt;your-api-key&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="request-url-path-parameters">
+<h3>Request url path parameters<a class="headerlink" href="#request-url-path-parameters" title="Link to this heading">¶</a></h3>
+<p>Only one URL path parameter is required:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">collection</span></code></p></td>
+<td><p>yes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p>The ID (either the url slug or the UUID) of the collection to which the work should be published. The work will be submitted to the collection immediately after import. If the collection requires review, and the <code class="docutils literal notranslate"><span class="pre">review_required</span></code> parameter is set to “true”, the work will be placed in the collection’s review queue. Otherwise, if the uploader has sufficient permissions for the collection, the review process will be bypassed.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="request-body">
+<h3>Request body<a class="headerlink" href="#request-body" title="Link to this heading">¶</a></h3>
+<p>This request must be made with a <code class="docutils literal notranslate"><span class="pre">multipart/form-data</span></code> request. The request body must include parts with following names:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Content Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">files</span></code></p></td>
+<td><p>yes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">application/octet-stream</span></code></p></td>
+<td><p>The (binary) file content to be uploaded. If multiple files are being uploaded, a body part with this same name (“files”) must be provided for each file. If more than three or four files are being uploaded, it is recommended to provide a single zip archive containing all of the files. The files will be assigned to the appropriate work based on filename, so where multiple files are provided these file names <strong>must be unique</strong>. If a zip archive is provided, the files must be contained in a single compressed folder with no subfolders.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code></p></td>
+<td><p>yes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">application/json</span></code></p></td>
+<td><p>An array of JSON metadata objects, each of which will be used to create a new work. Each must conform to the KCWorks implementation of the InvenioRDM metadata schema described <a class="reference external" href="https://mesh-research.github.io/knowledge-commons-works/reference/metadata.html">here</a>. In addition, an array of owners for the work may optionally be provided by adding a <code class="docutils literal notranslate"><span class="pre">parent.access.owned_by</span></code> property to each metadata object. Note that if no owners are provided, the work will be created with the organizational account that issued the OAuth token as the owner.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">review_required</span></code></p></td>
+<td><p>no</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">text/plain</span></code></p></td>
+<td><p>A string representation of a boolean (either “true” or “false”) indicating whether the work should be reviewed before publication. This setting is only relevant if the work is intended for publication in a collection that requires review. It will override the collection’s usual review policy, since the work is being uploaded by a collection administrator. (Default: “true”)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">strict_validation</span></code></p></td>
+<td><p>no</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">text/plain</span></code></p></td>
+<td><p>A string representation of a boolean (either “true” or “false”) indicating whether the import request should be rejected if any validation errors are encountered. If this value is “false”, the imported work will be created in KCWorks even if some of the provided metadata does not conform to the KCWorks metadata schema, provided these are not required fields. If this value is “true”, the import request will be rejected if any validation errors are encountered. (Default: “true”)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">all_or_none</span></code></p></td>
+<td><p>no</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">text/plain</span></code></p></td>
+<td><p>A string representation of a boolean (either “true” or “false”) indicating whether the entire import request should be rejected if any of the works fail to be created (whether for validation errors, upload errors, or other reasons). If this value is “false”, the import request will be accepted even if some of the works cannot be created. The response in this case will include a list of works that were successfully created and a list of errors for the works that failed to be created. (Default: “true”)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">notify_record_owners</span></code></p></td>
+<td><p>no</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">text/plain</span></code></p></td>
+<td><p>A string representation of a boolean (either “true” or “false”) indicating whether the owners of the work should be notified by email of the work’s creation. (Default: <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">id_scheme</span></code></p></td>
+<td><p>no</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">text/plain</span></code></p></td>
+<td><p>Identifier scheme used to match existing works for idempotent re-import (looked up in each work’s <code class="docutils literal notranslate"><span class="pre">metadata.identifiers</span></code>). Default: <code class="docutils literal notranslate"><span class="pre">import-recid</span></code>. The scheme must already be defined in KCWorks (<code class="docutils literal notranslate"><span class="pre">RDM_RECORDS_IDENTIFIERS_SCHEMES</span></code>), or arranged with the KCWorks team for addition before import. Built-in import-oriented schemes include <code class="docutils literal notranslate"><span class="pre">import-recid</span></code> and <code class="docutils literal notranslate"><span class="pre">neh-recid</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">alternate_id_scheme</span></code></p></td>
+<td><p>no</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">text/plain</span></code></p></td>
+<td><p>Optional secondary identifier scheme checked after <code class="docutils literal notranslate"><span class="pre">id_scheme</span></code> when looking up existing works. Same constraint as <code class="docutils literal notranslate"><span class="pre">id_scheme</span></code>. (Default: empty / unused)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">no_updates</span></code></p></td>
+<td><p>no</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">text/plain</span></code></p></td>
+<td><p>When <code class="docutils literal notranslate"><span class="pre">&quot;true&quot;</span></code>, refuse to change an existing matched work if its <strong>metadata</strong> differs from the import payload (soft skip; file handling is not reached in that case). When <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code> (default), differing metadata is applied to the existing draft/record, and files are reconciled as described below under <a class="reference internal" href="#import-existing-record-files"><span class="std std-ref">Files when re-importing an existing work (no_updates is &quot;false&quot;)</span></a>. Matching uses DOI / <code class="docutils literal notranslate"><span class="pre">id_scheme</span></code> so identical re-imports do not create duplicates.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="identifying-the-owners-of-the-work">
+<h3>Identifying the owners of the work<a class="headerlink" href="#identifying-the-owners-of-the-work" title="Link to this heading">¶</a></h3>
+<p>The array of owners, if provided in a metadata object’s <code class="docutils literal notranslate"><span class="pre">parent.access.owned_by</span></code> property, must include at least the full name and email address of the users to be added as owners of the work. If the user already has a Knowledge Commons account, their username should also be provided. Additional identifiers (e.g., ORCID) may be provided as well to help avoid duplicate accounts, since a KCWorks account will be created for each user if they do not already have one.</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>key</p></th>
+<th class="head"><p>required</p></th>
+<th class="head"><p>type</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">full_name</span></code></p></td>
+<td><p>yes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p>The full name of the user.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">email</span></code></p></td>
+<td><p>yes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p>The email address of the user.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">identifiers</span></code></p></td>
+<td><p>no</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">array</span></code></p></td>
+<td><p>An array of identifiers for the user. Any identifier schemes supported by KCWorks will be accepted. If the user already has a KCWorks account, the <code class="docutils literal notranslate"><span class="pre">kc_username</span></code> scheme should be used and the user’s username provided as the identifier. If you wish to provide an ORCID, it is recommended to use the <code class="docutils literal notranslate"><span class="pre">orcid</span></code> scheme. Identifiers for external organizations should be provided using the <code class="docutils literal notranslate"><span class="pre">import_user_id</span></code> scheme.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The resulting <code class="docutils literal notranslate"><span class="pre">owners</span></code> list should be shaped like this:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"full_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John Doe"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"john.doe@example.com"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"identifiers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0000-0000-0000-0000"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"scheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"orcid"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jdoe"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"scheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kc_username"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"scheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"import_user_id"</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Note that it is <em>not</em> assumed that the creators of a work should be the work’s owners. The creators will only be added as owners if each of them is listed in the <code class="docutils literal notranslate"><span class="pre">access.owned_by</span></code> property of the work’s metadata object.</p>
+<blockquote>
+<div><p>Note, too, that only the first member of the owners array will technically be assigned as the work’s owner in KCWorks. The other owners will be assigned access grants to the work with “manage” permissions.</p>
+</div></blockquote>
+</section>
+<section id="kc-accounts-for-work-owners">
+<h3>KC accounts for work owners<a class="headerlink" href="#kc-accounts-for-work-owners" title="Link to this heading">¶</a></h3>
+<p>KCWorks will create an internal KCWorks account for each work owner who does not already have an account on Knowledge Commons. Note that this <em>does not</em> create a full Knowledge Commons account. The owner will still need to visit Knowledge Commons to create an account through the usual registration process. When they do so, their KCWorks account will be linked to their Knowledge Commons account and they will be able to manage and edit their uploaded works.</p>
+<blockquote>
+<div><p>It is vital that the owner provide an identifier when they create their Knowledge Commons account that matches an identifier provided for them in the <code class="docutils literal notranslate"><span class="pre">owned_by</span></code> property of the work’s metadata object. This allows KCWorks to link the owner’s KCWorks account to their Knowledge Commons account after they register. The connecting identifier may be</p>
+<ul class="simple">
+<li><p>the same primary email address</p></li>
+<li><p>the same ORCID identifier</p></li>
+</ul>
+</div></blockquote>
+<p>If an owner does not already belong to the collection to which the records are being imported, that owner will also be added to the collection’s membership with the “reader” role. The allows them access to any records restricted to the collection’s membership, but does not afford them any additional permissions. What it does mean is that collection managers will be able to see all of the work owners in the list of collection members on the collection’s landing page.</p>
+</section>
+<section id="email-notifications-for-work-owners">
+<h3>Email notifications for work owners<a class="headerlink" href="#email-notifications-for-work-owners" title="Link to this heading">¶</a></h3>
+<p>When a work is imported into a collection, the work owners will receive an email notification only if the <code class="docutils literal notranslate"><span class="pre">notify_record_owners</span></code> parameter is set to <code class="docutils literal notranslate"><span class="pre">&quot;true&quot;</span></code>. (The default is <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code>.) This email will include a link to the work’s landing page on KCWorks. The email subject line and the email template used for this notification are configurable on a collection-by-collection basis. Authorized organizations should discuss the desired content with the KCWorks team.</p>
+<p>For KCWorks developers: The configuration for this email is found in the config variable <code class="docutils literal notranslate"><span class="pre">RECORD_IMPORTER_COMMUNITIES</span></code> in the KCWorks instance’s <code class="docutils literal notranslate"><span class="pre">invenio.cfg</span></code> file. This is a dictionary whose keys are the collection slugs and whose values are dictionaries with the following keys:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">email_subject_import</span></code>: The subject line for the email notification.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">email_template_import</span></code>: The name of the Jinja2 template file to use for the email notification. These templates must be located in the <code class="docutils literal notranslate"><span class="pre">templates/security/email</span></code> directory. One template file with an <code class="docutils literal notranslate"><span class="pre">.html</span></code> extension and one with a <code class="docutils literal notranslate"><span class="pre">.txt</span></code> extension are required, with identical names apart from the extension. The name provided in the <code class="docutils literal notranslate"><span class="pre">email_template_import</span></code> key should be the filename without the <code class="docutils literal notranslate"><span class="pre">.html</span></code> or <code class="docutils literal notranslate"><span class="pre">.txt</span></code> extension.</p></li>
+</ul>
+<p>The template will receive the following variables:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">record</span></code>: A dictionary containing the metadata for the imported work.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">community_page_url</span></code>: The URL of the collection’s landing page on KCWorks.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kc_registration_link</span></code>: The URL of the Knowledge Commons registration page.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">user</span></code>: The KCWorks User object for the user being notified.</p></li>
+</ul>
+</section>
+<section id="identifying-the-work-for-import">
+<h3>Identifying the work for import<a class="headerlink" href="#identifying-the-work-for-import" title="Link to this heading">¶</a></h3>
+<p>It is crucial that each work to be imported is assigned a unique identifier. This may be an identifier used internally by the importing organization, it may be a universally unique string such as a UUID, or it may be a universal identifier such as a DOI or a handle. In either case it must be unique across all works to be imported for the collection. This identifier will be used to identify the work in the response, and will be used to identify the work when checking for duplicate imports.</p>
+<p>By default, the identifier is provided in the <code class="docutils literal notranslate"><span class="pre">metadata</span></code> object as an <code class="docutils literal notranslate"><span class="pre">identifiers</span></code> array with the scheme <code class="docutils literal notranslate"><span class="pre">import-recid</span></code>. E.g.,</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"identifiers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"scheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"import-recid"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="c1">// ... other identifiers ...</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>To use a different scheme for deduplication, set the request form field <code class="docutils literal notranslate"><span class="pre">id_scheme</span></code> (and optionally <code class="docutils literal notranslate"><span class="pre">alternate_id_scheme</span></code>) to that scheme name, and use the same scheme in each work’s <code class="docutils literal notranslate"><span class="pre">metadata.identifiers</span></code>. The scheme must already be defined in KCWorks (<code class="docutils literal notranslate"><span class="pre">RDM_RECORDS_IDENTIFIERS_SCHEMES</span></code>), or arranged with the KCWorks team for addition before import. Built-in import-oriented schemes include <code class="docutils literal notranslate"><span class="pre">import-recid</span></code> and <code class="docutils literal notranslate"><span class="pre">neh-recid</span></code>. DOI values in <code class="docutils literal notranslate"><span class="pre">pids.doi</span></code> are also used for matching when present.</p>
+</section>
+<section id="files-when-re-importing-an-existing-work-no-updates-is-false">
+<span id="import-existing-record-files"></span><h3>Files when re-importing an existing work (<code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code>)<a class="headerlink" href="#files-when-re-importing-an-existing-work-no-updates-is-false" title="Link to this heading">¶</a></h3>
+<p>When an import matches an existing draft or published work and <code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code> (the default), or when <code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;true&quot;</span></code> but metadata is unchanged so the load continues, KCWorks reconciles files against the existing record as follows:</p>
+<ul class="simple">
+<li><p>Same filename (key) and same size → leave the existing file; no re-upload.</p></li>
+<li><p>Same filename but different size, or a file still marked pending → delete the existing object and upload the new file.</p></li>
+<li><p>Filename present only in the import payload → upload as a new file.</p></li>
+<li><p>Filename present only on the existing record → delete it from the record.</p></li>
+</ul>
+<p>Comparison is by <strong>filename and size</strong>, not by checksum or byte content. Two different files with the same name and size are treated as unchanged.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;true&quot;</span></code> and metadata <strong>differs</strong>, the import stops before this file step; existing files are not modified.</p>
+</section>
+</section>
+<section id="example-import-request">
+<h2>Example import request<a class="headerlink" href="#example-import-request" title="Link to this heading">¶</a></h2>
+<p>The following example shows a request to import a single work with two files and a single owner.</p>
+<section id="metadata-json-object">
+<h3>Metadata JSON object<a class="headerlink" href="#metadata-json-object" title="Link to this heading">¶</a></h3>
+<p>The metadata JSON string for a journal article with a PDF file and a Word file, with a single owner might look like the sample below.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The metadata must be provided as an array of metadata objects, even if it contains only a single object.</p>
+</div>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"resource_type"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"textDocument-journalArticle"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"creators"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"person_or_org"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"personal"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Fitzpatrick, Kathleen"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"given_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Kathleen"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"family_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Fitzpatrick"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"identifiers"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nt">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kfitz"</span><span class="p">,</span><span class="w"> </span><span class="nt">"scheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kc_username"</span><span class="w"> </span><span class="p">}]</span>
+<span class="w">          </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"author"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">          </span><span class="nt">"affiliations"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Modern Languages Association"</span><span class="w"> </span><span class="p">}]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Giving It Away: Sharing and the Future of Scholarly Communication"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"publisher"</span><span class="p">:</span><span class="w"> </span><span class="s2">"University of Toronto Press Inc. (UTPress)"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"publication_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2012"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"languages"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eng"</span><span class="w"> </span><span class="p">}],</span>
+<span class="w">      </span><span class="nt">"identifiers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span><span class="w"> </span><span class="nt">"scheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"import-recid"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.3138/jsp.43.4.347"</span><span class="p">,</span><span class="w"> </span><span class="nt">"scheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"doi"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1710-1166"</span><span class="p">,</span><span class="w"> </span><span class="nt">"scheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"issn"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"rights"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cc-by-4.0"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"en"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Creative Commons Attribution 4.0 International"</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Open access has great potential to transform the future of scholarly communication, but its success will require a focus on values -- and particularly generosity -- rather than on costs."</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"custom_fields"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"journal:journal"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Journal of Scholarly Publishing"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"issue"</span><span class="p">:</span><span class="w"> </span><span class="s2">"4"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"volume"</span><span class="p">:</span><span class="w"> </span><span class="s2">"43"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"pages"</span><span class="p">:</span><span class="w"> </span><span class="s2">"347-362"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"issn"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1198-9742"</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"kcr:user_defined_tags"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"open access"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Scholarly communication"</span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"parent"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"owned_by"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"full_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Kathleen Fitzpatrick"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kfitz@msu.edu"</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"identifiers"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nt">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kfitz"</span><span class="p">,</span><span class="w"> </span><span class="nt">"scheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"kc_username"</span><span class="w"> </span><span class="p">}]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"entries"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"fitzpatrick-givingitaway.docx"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">149619</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"fitzpatrick-givingitaway.docx"</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">"fitzpatrick-givingitaway.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">234567</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">"key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"fitzpatrick-givingitaway.pdf"</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="http-request">
+<h3>HTTP request<a class="headerlink" href="#http-request" title="Link to this heading">¶</a></h3>
+<p>To submit the article to be included in the <code class="docutils literal notranslate"><span class="pre">my-organization</span></code> collection, one might use a command line tool like <code class="docutils literal notranslate"><span class="pre">curl</span></code>, with the following command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">works</span><span class="o">.</span><span class="n">hcommons</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">import</span><span class="o">/</span><span class="n">my</span><span class="o">-</span><span class="n">collection</span><span class="o">-</span><span class="nb">id</span> \
+  <span class="o">-</span><span class="n">H</span> <span class="s2">"Content-Type: multipart/form-data"</span> \
+  <span class="o">-</span><span class="n">H</span> <span class="s2">"Accept: application/json"</span> \
+  <span class="o">-</span><span class="n">H</span> <span class="s2">"Authorization: Bearer &lt;your-api-key&gt;"</span> \
+  <span class="o">-</span><span class="n">F</span> <span class="s2">"files=@path/to/files/fitzpatrick-givingitaway.pdf"</span> \
+  <span class="o">-</span><span class="n">F</span> <span class="s2">"files=@path/to/files/fitzpatrick-givingitaway.docx"</span> \
+  <span class="o">-</span><span class="n">F</span> <span class="s2">"metadata={// ... metadata JSON object goes here as a string ... //}"</span>
+</pre></div>
+</div>
+<p>Of course, in most cases the request will be made programmatically, not via a command line tool. The syntax for the request will vary depending on the programming language and tools being used.</p>
+</section>
+</section>
+<section id="a-successful-import-response">
+<h2>A successful import response<a class="headerlink" href="#a-successful-import-response" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span> <span class="mi">201</span> <span class="n">Created</span>
+<span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span>
+</pre></div>
+</div>
+<p>This response will include a JSON object with the following fields:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code>: The status of the import request, which will be “success” if the import request was successful.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code>: An array of JSON objects, one for each record that was created in the operation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">errors</span></code>: An array of JSON objects, one for each record that failed to be created. (In a successful import, this array will be empty.)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message</span></code>: A message describing the import request. (In a successful import, this will be “All records were successfully imported”.)</p></li>
+</ul>
+<p>Each object in the <code class="docutils literal notranslate"><span class="pre">data</span></code> array will have the following fields:</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>key</p></th>
+<th class="head"><p>type</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">item_index</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p>The index of the record in the import request. (Starting with 0 for the first record.)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">record_id</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p>The internal KCWorks ID of the new work.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">source_id</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p>The external identifier for the work that was provided in the import request using the <code class="docutils literal notranslate"><span class="pre">import-recid</span></code> scheme.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">record_url</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p>The URL of the new work. This is the URL of the work’s landing page on KCWorks. Other URLs for the work, including the endpoints for API operations, are available in the <code class="docutils literal notranslate"><span class="pre">links</span></code> property of the record’s <code class="docutils literal notranslate"><span class="pre">metadata</span></code> object.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">files</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">object</span></code></p></td>
+<td><p>An object whose keys are the filenames for the files that were successfully uploaded and whose values are 2 member arrays. The first member is a string representing the status of the file upload operation. The second member is an array of string error messages if any errors occurred during the upload. Further details about the files, including their size and checksum, are available in the <code class="docutils literal notranslate"><span class="pre">files</span></code> property of the <code class="docutils literal notranslate"><span class="pre">metadata</span></code> object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">collection_id</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p>The ID of the collection to which the work was published, if any. This is provided for convenience. Details about the collection are available in the <code class="docutils literal notranslate"><span class="pre">parent.communities</span></code> property of the <code class="docutils literal notranslate"><span class="pre">metadata</span></code> object.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">errors</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">array</span></code></p></td>
+<td><p>A list of objects, each of which describes an error that occurred during the import process. These might include validation errors for certain fields in the provided metadata that did not prevent creation of the work.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">object</span></code></p></td>
+<td><p>The metadata for the created work, in JSON format, following the KCWorks implementation of the InvenioRDM metadata schema described <a class="reference external" href="https://mesh-research.github.io/knowledge-commons-works/reference/metadata.html">here</a>. The returned metadata will include internal KCWorks system fields such as <code class="docutils literal notranslate"><span class="pre">created</span></code>, <code class="docutils literal notranslate"><span class="pre">updated</span></code>, <code class="docutils literal notranslate"><span class="pre">revision_id</span></code>, <code class="docutils literal notranslate"><span class="pre">id</span></code>, etc. It is identical to the metadata that would be returned by a GET request to the records API endpoint on KCWorks.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The response object will be shaped like this:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"success"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"record_url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://works.hcommons.org/records/1234567890"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"file1.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"success"</span><span class="p">,</span><span class="w"> </span><span class="p">[]],</span>
+<span class="w">        </span><span class="nt">"file2.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"success"</span><span class="p">,</span><span class="w"> </span><span class="p">[]]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"collection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">      </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* ... */</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567891"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"record_url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://works.hcommons.org/records/1234567891"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"file1.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"success"</span><span class="p">,</span><span class="w"> </span><span class="p">[]],</span>
+<span class="w">        </span><span class="nt">"file2.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"success"</span><span class="p">,</span><span class="w"> </span><span class="p">[]]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"collection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">      </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* ... */</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"All records were successfully imported."</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="an-unsuccessful-import-response">
+<h2>An unsuccessful import response<a class="headerlink" href="#an-unsuccessful-import-response" title="Link to this heading">¶</a></h2>
+<section id="the-token-does-not-have-the-necessary-permissions">
+<h3>The token does not have the necessary permissions<a class="headerlink" href="#the-token-does-not-have-the-necessary-permissions" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span> <span class="mi">403</span> <span class="n">Forbidden</span>
+<span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span>
+</pre></div>
+</div>
+<p>This response will include a JSON object with the following fields:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"error"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The user does not have the necessary permissions."</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="the-request-metadata-is-malformed-or-invalid">
+<h3>The request metadata is malformed or invalid<a class="headerlink" href="#the-request-metadata-is-malformed-or-invalid" title="Link to this heading">¶</a></h3>
+<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">Bad Request</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<p>This response is returned when some of the provided metadata for all of the works to be imported is malformed or invalid. This indicates that <em>none of the works has been created</em> and a new request must be made with corrected metadata. This response will only be received if either
+a. the <code class="docutils literal notranslate"><span class="pre">strict_validation</span></code> request parameter was set to “true” and all of the supplied metadata objects raise validation errors, or
+b. the <code class="docutils literal notranslate"><span class="pre">strict_validation</span></code> parameter is set to “false”, but the validation errors affected fields that are required for the works to be created.
+c. the <code class="docutils literal notranslate"><span class="pre">all_or_none</span></code> request parameter is set to “true” and some of the supplied metadata objects raise validation errors.</p>
+<p>The response will include a JSON object with the same shape as the successful response, but with the following differences:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> field will be “error”.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">data</span></code> field will be an empty array.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">errors</span></code> field will be an array of objects, each of which describes a work that failed to be created. In each object the <code class="docutils literal notranslate"><span class="pre">record_id</span></code> and <code class="docutils literal notranslate"><span class="pre">record_url</span></code> fields will be <code class="docutils literal notranslate"><span class="pre">null</span></code>, since the work was not created. The <code class="docutils literal notranslate"><span class="pre">errors</span></code> field will be an array of objects, each of which describes an error that occurred during the attempt to create the work. The <code class="docutils literal notranslate"><span class="pre">metadata</span></code> field will still contain the metadata that was provided in the request for reference.</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"error"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="err">(</span>
+<span class="w">        </span><span class="s2">"No records were successfully imported. Please check the list of failed records "</span>
+<span class="w">        </span><span class="s2">"in the 'errors' field for more information. Each failed item should have its own "</span>
+<span class="w">        </span><span class="s2">"list of specific errors."</span>
+<span class="w">    </span><span class="err">)</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_url"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"title"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Required field missing."</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">],</span>
+<span class="w">            </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">            </span><span class="nt">"collection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cm">/* ... */</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_url"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"metadata.creators.0.occupation"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unknown field."</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"metadata.publication_date"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Date is not in Extended Date Time Format (EDTF)."</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">],</span>
+<span class="w">            </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">            </span><span class="nt">"collection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cm">/* ... */</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="a-partially-successful-import-response">
+<h2>A partially successful import response<a class="headerlink" href="#a-partially-successful-import-response" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>NOT YET IMPLEMENTED. At present the <code class="docutils literal notranslate"><span class="pre">all_or_none</span></code> request parameter will always be “true”.</p>
+</div></blockquote>
+<p>If only some of the works to be imported are malformed or invalid, and the <code class="docutils literal notranslate"><span class="pre">all_or_none</span></code> request parameter is set to “false”, the response will be <code class="docutils literal notranslate"><span class="pre">207</span> <span class="pre">Multi-Status</span></code>. In this case the response will be shaped much like the successful and unsuccessful responses described above, but there will be items in <em>both</em> the <code class="docutils literal notranslate"><span class="pre">data</span></code> and <code class="docutils literal notranslate"><span class="pre">errors</span></code> arrays. The items in the <code class="docutils literal notranslate"><span class="pre">data</span></code> array will be works that were successfully created, and the items in the <code class="docutils literal notranslate"><span class="pre">errors</span></code> array will be works that failed to be created.</p>
+<p>The response will be shaped like this:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"multi_status"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="err">(</span>
+<span class="w">        </span><span class="s2">"Some records were successfully imported, but some failed. Please check the "</span>
+<span class="w">        </span><span class="s2">"list of failed records in the 'errors' field for more information. Each failed "</span>
+<span class="w">        </span><span class="s2">"item should have its own list of specific errors."</span>
+<span class="w">    </span><span class="err">)</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567891"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"source_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xxx1234567891"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://works.hcommons.org/records/1234567891"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"file1.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"success"</span><span class="p">,</span><span class="w"> </span><span class="p">[]],</span>
+<span class="w">                </span><span class="nt">"file2.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"success"</span><span class="p">,</span><span class="w"> </span><span class="p">[]]</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">"collection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">            </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cm">/* ... */</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"source_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xxx1234567890"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_url"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"title"</span><span class="p">,</span>
+<span class="w">                    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Required field missing."</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">],</span>
+<span class="w">            </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">            </span><span class="nt">"collection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cm">/* ... */</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<section id="the-request-file-upload-failed">
+<h3>The request file upload failed<a class="headerlink" href="#the-request-file-upload-failed" title="Link to this heading">¶</a></h3>
+<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">Bad Request</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<p>If the file content is uploaded but for some reason is considered corrupted or invalid, a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code> response will be returned. This response will include a JSON object with the following fields:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"error"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="err">(</span>
+<span class="w">        </span><span class="s2">"No records were successfully imported. Please check the list of failed records "</span>
+<span class="w">        </span><span class="s2">"in the 'errors' field for more information. Each failed item should have its own "</span>
+<span class="w">        </span><span class="s2">"list of specific errors."</span>
+<span class="w">    </span><span class="err">)</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"source_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xxx1234567890"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_url"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">"validation_error"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Missing data for required field."</span><span class="p">]}</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">],</span>
+<span class="w">            </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"file1.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"uploaded"</span><span class="p">,</span><span class="w"> </span><span class="p">[]]</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">"collection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cm">/* ... */</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"source_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xxx1234567891"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_url"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">"validation_error"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">"creators"</span><span class="w"> </span><span class="p">{</span><span class="nt">"occupation"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Unknown field."</span><span class="p">]}}</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">"validation_error"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"publication_date"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Date is not in Extended Date Time Format (EDTF)."</span><span class="p">]}</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="nt">"file upload failures"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="nt">"sample.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                            </span><span class="s2">"failed"</span><span class="p">,</span>
+<span class="w">                            </span><span class="p">[</span><span class="s2">"File sample.pdf not found in list of files."</span><span class="p">],</span>
+<span class="w">                        </span><span class="p">]</span>
+<span class="w">                    </span><span class="p">},</span>
+<span class="w">                </span><span class="p">},</span>
+<span class="w">            </span><span class="p">],</span>
+<span class="w">            </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"sample.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"failed"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">"File sample.pdf not found in list of files."</span><span class="p">]],</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">"collection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cm">/* ... */</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>If an upload simply fails to complete and times out, the client will instead receive a <code class="docutils literal notranslate"><span class="pre">504</span> <span class="pre">Gateway</span> <span class="pre">Timeout</span></code> response.</p>
+</section>
+</section>
+<section id="what-happens-to-an-import-request-that-fails">
+<h2>What happens to an import request that fails?<a class="headerlink" href="#what-happens-to-an-import-request-that-fails" title="Link to this heading">¶</a></h2>
+<p>If all steps of an import request do not complete successfully, the work will not be created. The files that were successfully uploaded will be deleted, and any draft record created as part of the import request will be deleted. The client may attempt the import request again.</p>
+</section>
+<section id="making-duplicate-import-requests">
+<h2>Making duplicate import requests<a class="headerlink" href="#making-duplicate-import-requests" title="Link to this heading">¶</a></h2>
+<p>Note that it is possible to make duplicate import requests <em>unless</em> the work to be imported includes a pre-existing DOI identifier or some other unique identifier that has already been registered in KCWorks. In this case, the import request will be rejected with a <code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">Conflict</span></code> response code and a <code class="docutils literal notranslate"><span class="pre">Location</span></code> header pointing to the existing work.</p>
+<p>In the absence of such a unique identifier, however, KCWorks will not try to detect duplicate works based on the metadata, file name, or file content. If the same work is imported multiple times without a pre-existing unique identifier, it will be created multiple times in KCWorks and each version will be assigned a newly minted DOI.</p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="library.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Library API</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="installation.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Installation</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024-2026, MESH Research
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/MESH-Research/kcworks-import-client" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Streamlined Import API</a><ul>
+<li><a class="reference internal" href="#who-can-use-the-import-api">Who can use the import API?</a></li>
+<li><a class="reference internal" href="#the-import-request">The import request</a><ul>
+<li><a class="reference internal" href="#request">Request</a></li>
+<li><a class="reference internal" href="#required-headers">Required headers</a></li>
+<li><a class="reference internal" href="#request-url-path-parameters">Request url path parameters</a></li>
+<li><a class="reference internal" href="#request-body">Request body</a></li>
+<li><a class="reference internal" href="#identifying-the-owners-of-the-work">Identifying the owners of the work</a></li>
+<li><a class="reference internal" href="#kc-accounts-for-work-owners">KC accounts for work owners</a></li>
+<li><a class="reference internal" href="#email-notifications-for-work-owners">Email notifications for work owners</a></li>
+<li><a class="reference internal" href="#identifying-the-work-for-import">Identifying the work for import</a></li>
+<li><a class="reference internal" href="#files-when-re-importing-an-existing-work-no-updates-is-false">Files when re-importing an existing work (<code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#example-import-request">Example import request</a><ul>
+<li><a class="reference internal" href="#metadata-json-object">Metadata JSON object</a></li>
+<li><a class="reference internal" href="#http-request">HTTP request</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#a-successful-import-response">A successful import response</a></li>
+<li><a class="reference internal" href="#an-unsuccessful-import-response">An unsuccessful import response</a><ul>
+<li><a class="reference internal" href="#the-token-does-not-have-the-necessary-permissions">The token does not have the necessary permissions</a></li>
+<li><a class="reference internal" href="#the-request-metadata-is-malformed-or-invalid">The request metadata is malformed or invalid</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#a-partially-successful-import-response">A partially successful import response</a><ul>
+<li><a class="reference internal" href="#the-request-file-upload-failed">The request file upload failed</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#what-happens-to-an-import-request-that-fails">What happens to an import request that fails?</a></li>
+<li><a class="reference internal" href="#making-duplicate-import-requests">Making duplicate import requests</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=38b66d78"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    </body>
+</html>

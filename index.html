@@ -193,9 +193,10 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="import_api.html">Streamlined Import API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="library.html">Library API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">Single-collection CLI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="multi_collection.html">Multi-collection CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Using the single-collection importer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multi_collection.html">Using the multi-collection importer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 
@@ -251,27 +252,38 @@
 <li class="toctree-l2"><a class="reference internal" href="installation.html#tests">Tests</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="import_api.html">Streamlined Import API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="import_api.html#who-can-use-the-import-api">Who can use the import API?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="import_api.html#the-import-request">The import request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="import_api.html#example-import-request">Example import request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="import_api.html#a-successful-import-response">A successful import response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="import_api.html#an-unsuccessful-import-response">An unsuccessful import response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="import_api.html#a-partially-successful-import-response">A partially successful import response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="import_api.html#what-happens-to-an-import-request-that-fails">What happens to an import request that fails?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="import_api.html#making-duplicate-import-requests">Making duplicate import requests</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="library.html">Library API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="library.html#importclient">ImportClient</a></li>
 <li class="toctree-l2"><a class="reference internal" href="library.html#multicollectionimporter">MultiCollectionImporter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="library.html#public-exports">Public exports</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">Single-collection CLI</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cli.html#command-line-arguments">Command-line arguments</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cli.html#environment-variables">Environment variables</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cli.html#usage-examples">Usage examples</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cli.html#response-handling">Response handling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cli.html#exit-codes">Exit codes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cli.html#server-api-details">Server API details</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Using the single-collection importer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#library-api">Library API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#command-line-arguments">Command-Line Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#environment-variables">Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#usage-examples">Usage Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#response-handling">Response Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#exit-codes">Exit Codes</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="multi_collection.html">Multi-collection CLI</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="multi_collection.html">Using the multi-collection importer</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="multi_collection.html#manifest-format">Manifest format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="multi_collection.html#parent-child-links">Parent / child links</a></li>
-<li class="toctree-l2"><a class="reference internal" href="multi_collection.html#command-line-arguments">Command-line arguments</a></li>
-<li class="toctree-l2"><a class="reference internal" href="multi_collection.html#environment-variables">Environment variables</a></li>
-<li class="toctree-l2"><a class="reference internal" href="multi_collection.html#usage-example">Usage example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multi_collection.html#command-line-arguments">Command-Line Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multi_collection.html#usage-example">Usage Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a><ul>
@@ -290,9 +302,9 @@ parent/child links, then import each batch</p></li>
 <li><p><strong>CLI entry points</strong> — <code class="docutils literal notranslate"><span class="pre">kcworks-api-importer</span></code> and
 <code class="docutils literal notranslate"><span class="pre">kcworks-multi-collection-importer</span></code></p></li>
 </ul>
-<p>Server-side import API semantics (metadata schema, ownership, file
-reconciliation, HTTP responses) are documented in the
-<a class="reference external" href="https://mesh-research.github.io/knowledge-commons-works/reference/api.html">KCWorks API reference</a>.</p>
+<p>The <a class="reference internal" href="import_api.html"><span class="std std-doc">Streamlined Import API</span></a> chapter includes the full usage
+narrative (permissions, request body, owners, identifiers, file reconciliation,
+and response shapes) previously kept only in the KCWorks instance docs.</p>
 </section>
 <section id="indices-and-tables">
 <h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h2>

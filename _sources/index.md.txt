@@ -7,6 +7,7 @@ Standalone Python client for importing works into
 :maxdepth: 2
 
 installation
+import_api
 library
 cli
 multi_collection
@@ -22,9 +23,9 @@ changelog
 - **CLI entry points** — `kcworks-api-importer` and
   `kcworks-multi-collection-importer`
 
-Server-side import API semantics (metadata schema, ownership, file
-reconciliation, HTTP responses) are documented in the
-[KCWorks API reference](https://mesh-research.github.io/knowledge-commons-works/reference/api.html).
+The [Streamlined Import API](import_api.md) chapter includes the full usage
+narrative (permissions, request body, owners, identifiers, file reconciliation,
+and response shapes) previously kept only in the KCWorks instance docs.
 
 ## Indices and tables
 

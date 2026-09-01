@@ -1,24 +1,12 @@
-# Multi-collection CLI
+# Using the multi-collection importer
 
 (kcworks-multi-collection-importer-script)=
 
-`kcworks-multi-collection-importer` (module
-`kcworks_import_client.multi_collection_importer`) reads a JSON or YAML
-**manifest**, creates any missing collections via the communities API,
-optionally links parent/child collections, and then imports each batch with
-the same logic as the single-collection importer.
+For bulk imports that span multiple collections, use [`kcworks-multi-collection-importer`](https://github.com/MESH-Research/kcworks-import-client) (`kcworks_import_client.multi_collection_importer`). Install with the `yaml` extra if you use YAML manifests (`pip install -e ".[yaml]"`). It reads a JSON or YAML **manifest**, creates any missing collections via the communities API, optionally links parent/child collections, and then calls the same import logic as the single-collection importer for each entry.
 
-Install with the `yaml` extra if you use YAML manifests:
-
-```bash
-pip install -e ".[yaml]"
-```
-
-For application code, prefer `MultiCollectionImporter` from {doc}`library`
-(`run_manifest(...)`).
+The single-collection importer remains usable on its own. The multi-collection wrapper is for when you want one command driven by a manifest.
 
 ## Manifest format
-
 YAML example:
 
 ```yaml
@@ -65,61 +53,41 @@ Equivalent JSON:
 }
 ```
 
-Relative paths are resolved against the manifest file's directory.
+Relative paths in the manifest are resolved against the manifest file's directory. YAML manifests require [PyYAML](https://pyyaml.org/).
 
-Each collection **slug** may appear only once per manifest (one create/link/import
-batch). Duplicate slugs are not supported as multiple batches; later rows for
-the same slug silently override earlier ones. For additional batches into the
-same collection, use another manifest run or the single-collection importer.
+Each collection **slug** may appear only once in a given manifest. The importer treats that as a single create/link/import batch for that collection. Duplicate slugs are not supported as multiple batches (later rows silently override earlier ones for the same slug). To import more records into a collection later, use another manifest run or the single-collection importer.
 
-### Optional per-entry fields
+Optional per-entry fields:
 
-- `id_scheme` / `alternate_id_scheme` — override CLI defaults. Schemes must
-  already be defined in KCWorks (`RDM_RECORDS_IDENTIFIERS_SCHEMES`), or
-  arranged with the KCWorks team before import.
-- `notify_record_owners` — `true`/`false`; overrides `--notify-record-owners`.
-- `no_updates` — `true`/`false`; overrides `--no-updates`. Default allows
-  metadata updates on existing matches (server reconciles files by filename
-  and size).
+- `id_scheme` / `alternate_id_scheme` — override the CLI defaults for that collection. Schemes must already be defined in KCWorks (`RDM_RECORDS_IDENTIFIERS_SCHEMES`), or arranged with the KCWorks team for addition before import.
+- `notify_record_owners` — `true`/`false` for that collection; overrides `--notify-record-owners` for the entry.
+- `no_updates` — `true`/`false` for that collection; overrides `--no-updates` for the entry. Default is to allow metadata updates on existing matches (with file reconciliation as in {ref}`import-existing-record-files`).
 
 ## Parent / child links
+With `--assign-parents`, entries that list `parent_slug` are linked under that parent. The script:
 
-With `--assign-parents`, entries that list `parent_slug` are linked under that
-parent. The client:
+1. Ensures the parent has `children.allow=true` (collection owners can set this on KCWorks).
+2. Submits a subcommunity **join-request**. When the OAuth user owns both collections, the request is **auto-accepted** and the link is created immediately.
 
-1. Ensures the parent has `children.allow=true` (collection owners can set this
-   on KCWorks).
-2. Submits a subcommunity **join-request**. When the OAuth user owns both
-   collections, the request is **auto-accepted**.
+See [Collection hierarchy and subcollection requests](https://mesh-research.github.io/knowledge-commons-works/admin_guide/collection_hierarchy.html) for the full operator documentation on collection hierarchy.
 
-See the KCWorks operator guide:
-[Collection hierarchy](https://mesh-research.github.io/knowledge-commons-works/admin_guide/collection_hierarchy.html).
+## Command-Line Arguments
+| Argument                 | Description                                                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `--api-key KEY`          | API key (or `KCWORKS_IMPORT_API_KEY`, or interactive prompt).                                                            |
+| `--manifest PATH`        | Path to the JSON/YAML manifest (or `KCWORKS_IMPORT_MANIFEST_PATH`, or interactive prompt).                               |
+| `--assign-parents`       | Create parent/child links for entries that list `parent_slug`.                                                           |
+| `--testing`              | Use a local testing instance (`https://localhost`).                                                                      |
+| `--notify-record-owners` | Default notify flag for entries that do not set `notify_record_owners`.                                                  |
+| `--id-scheme SCHEME`     | Default import dedupe scheme (default: `import-recid`); overridable per entry.                                           |
+| `--alternate-id-scheme`  | Default secondary dedupe scheme; overridable per entry.                                                                  |
+| `--no-updates`           | Default block on metadata updates for existing matches; overridable per entry. Default: allow updates (see {ref}`import-existing-record-files` for files). |
 
-## Command-line arguments
-
-| Argument | Description |
-| --- | --- |
-| `--api-key KEY` | API key (or `KCWORKS_IMPORT_API_KEY`, or prompt). |
-| `--manifest PATH` | JSON/YAML manifest (or `KCWORKS_IMPORT_MANIFEST_PATH`, or prompt). |
-| `--assign-parents` | Create parent/child links for entries that list `parent_slug`. |
-| `--testing` | Use local testing instance (`https://localhost`). |
-| `--notify-record-owners` | Default notify flag for entries without `notify_record_owners`. |
-| `--id-scheme SCHEME` | Default dedupe scheme (default: `import-recid`); overridable per entry. |
-| `--alternate-id-scheme` | Default secondary scheme; overridable per entry. |
-| `--no-updates` | Default block on metadata updates for existing matches; overridable per entry. |
-
-## Environment variables
-
-- `KCWORKS_IMPORT_API_KEY`
-- `KCWORKS_IMPORT_MANIFEST_PATH`
-- `KCWORKS_IMPORT_API_URL` — import base; communities base derived when set
-- `KCWORKS_COMMUNITIES_API_URL` — communities base override
-
-## Usage example
-
+## Usage Example
 ```bash
 kcworks-multi-collection-importer \
   --api-key "your-api-key" \
   --manifest "import_manifest.yaml" \
   --assign-parents
 ```
+
