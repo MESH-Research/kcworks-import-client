@@ -104,16 +104,7 @@ import json
 import os
 import sys
 import threading
-from typing import Any, Optional
-
-# Check Python version (match KCWorks project requirement)
-if sys.version_info < (3, 12):  # noqa: PLR2004, SIM108
-    print(
-        "Error: This script requires Python 3.12 or later. "
-        f"Current version: {sys.version}",
-        file=sys.stderr,
-    )
-    sys.exit(1)
+from typing import Any
 
 from .client import ImportClient, guess_mime_type
 from .exceptions import ImportRequestError
@@ -255,7 +246,7 @@ def _get_files_paths(args: argparse.Namespace) -> list[str]:
     return validated_paths
 
 
-def _get_output_path(args: argparse.Namespace) -> Optional[str]:  # noqa: UP007
+def _get_output_path(args: argparse.Namespace) -> str | None:  # noqa: UP007
     """Get optional path to save the response JSON.
 
     Args:
@@ -268,7 +259,7 @@ def _get_output_path(args: argparse.Namespace) -> Optional[str]:  # noqa: UP007
         SystemExit: If output directory does not exist.
     """
     if args.output:
-        output_path: Optional[str] = str(args.output)  # noqa: UP007
+        output_path: str | None = str(args.output)  # noqa: UP007
     else:
         output_path_env = os.getenv("KCWORKS_IMPORT_OUTPUT_PATH")
         if output_path_env:
@@ -420,7 +411,11 @@ def _print_error(message: str, details: str | None = None) -> None:
 
 
 def _cli_spinner_progress() -> tuple[Any, Any]:
-    """Start a CLI spinner; return ``(progress_callback, stop_fn)``."""
+    """Start a CLI spinner.
+
+    Returns:
+        ``(progress_callback, stop_fn)`` for driving and clearing the spinner.
+    """
     stop_spinner = threading.Event()
 
     def _run_spinner(
@@ -492,7 +487,7 @@ def import_works(
     collection_id: str,
     metadata_path: str,
     files_paths: list[str],
-    output_path: Optional[str] = None,  # noqa: UP007
+    output_path: str | None = None,  # noqa: UP007
     testing: bool = False,
     notify_owners: bool = False,
     id_scheme: str = "import-recid",

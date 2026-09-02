@@ -28,16 +28,7 @@ import argparse
 import os
 import sys
 from pathlib import Path
-from typing import Any, Optional
-
-# Check Python version (match KCWorks project requirement)
-if sys.version_info < (3, 12):  # noqa: PLR2004
-    print(
-        "Error: This script requires Python 3.12 or later. "
-        f"Current version: {sys.version}",
-        file=sys.stderr,
-    )
-    sys.exit(1)
+from typing import Any, NoReturn
 
 from .api_importer import _get_api_key
 from .exceptions import CommunityError, ManifestError
@@ -67,7 +58,7 @@ def _print_error(message: str, details: str | None = None) -> None:
     print("", file=sys.stderr)
 
 
-def _exit_on_error(exc: Exception) -> None:
+def _exit_on_error(exc: Exception) -> NoReturn:
     """Print ``exc`` and exit with status 1."""
     message = str(exc)
     if ": " in message:
@@ -81,18 +72,27 @@ def _exit_on_error(exc: Exception) -> None:
 def _load_manifest(manifest_path: str) -> list[dict[str, Any]]:
     """Load and validate the import manifest (CLI wrapper).
 
-    Raises:
-        SystemExit: On read/parse/validation failure (CLI compatibility).
+    Args:
+        manifest_path: Path to a JSON or YAML manifest file.
+
+    Returns:
+        List of validated collection entry dicts.
     """
     try:
         return load_manifest(manifest_path)
     except ManifestError as exc:
         _exit_on_error(exc)
-        raise  # pragma: no cover
 
 
 def _auth_headers(api_key: str) -> dict[str, str]:
-    """Build standard JSON API auth headers."""
+    """Build standard JSON API auth headers.
+
+    Args:
+        api_key: Bearer token.
+
+    Returns:
+        Headers dict for communities API requests.
+    """
     return {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -129,7 +129,6 @@ def _normalize_files(
         )
     except ManifestError as exc:
         _exit_on_error(exc)
-        raise  # pragma: no cover
 
 
 def _importer(api_key: str, testing: bool = False) -> MultiCollectionImporter:
@@ -145,12 +144,20 @@ def get_community(
     slug_or_id: str,
     testing: bool = False,
 ) -> dict[str, Any] | None:
-    """Fetch a community by slug or UUID (CLI wrapper)."""
+    """Fetch a community by slug or UUID (CLI wrapper).
+
+    Args:
+        api_key: Bearer token.
+        slug_or_id: Community slug or UUID.
+        testing: Use the localhost instance when True.
+
+    Returns:
+        Community payload, or ``None`` when not found.
+    """
     try:
         return _importer(api_key, testing).get_community(slug_or_id)
     except CommunityError as exc:
         _exit_on_error(exc)
-        raise  # pragma: no cover
 
 
 def create_community(
@@ -159,12 +166,21 @@ def create_community(
     name: str,
     testing: bool = False,
 ) -> dict[str, Any]:
-    """Create a community owned by the authenticated user (CLI wrapper)."""
+    """Create a community owned by the authenticated user (CLI wrapper).
+
+    Args:
+        api_key: Bearer token.
+        slug: Community slug.
+        name: Community display name.
+        testing: Use the localhost instance when True.
+
+    Returns:
+        Created community payload.
+    """
     try:
         return _importer(api_key, testing).create_community(slug, name)
     except CommunityError as exc:
         _exit_on_error(exc)
-        raise  # pragma: no cover
 
 
 def ensure_community(
@@ -173,12 +189,21 @@ def ensure_community(
     name: str,
     testing: bool = False,
 ) -> dict[str, Any]:
-    """Return an existing community by slug, or create it (CLI wrapper)."""
+    """Return an existing community by slug, or create it (CLI wrapper).
+
+    Args:
+        api_key: Bearer token.
+        slug: Community slug.
+        name: Community display name used when creating.
+        testing: Use the localhost instance when True.
+
+    Returns:
+        Existing or newly created community payload.
+    """
     try:
         return _importer(api_key, testing).ensure_community(slug, name)
     except CommunityError as exc:
         _exit_on_error(exc)
-        raise  # pragma: no cover
 
 
 def enable_children(
@@ -186,12 +211,20 @@ def enable_children(
     community: dict[str, Any],
     testing: bool = False,
 ) -> dict[str, Any]:
-    """Ensure ``children.allow`` is true on a parent community (CLI wrapper)."""
+    """Ensure ``children.allow`` is true on a parent community (CLI wrapper).
+
+    Args:
+        api_key: Bearer token.
+        community: Parent community payload.
+        testing: Use the localhost instance when True.
+
+    Returns:
+        Updated community payload.
+    """
     try:
         return _importer(api_key, testing).enable_children(community)
     except CommunityError as exc:
         _exit_on_error(exc)
-        raise  # pragma: no cover
 
 
 def assign_parent(
@@ -213,7 +246,17 @@ def run_collection_creation_job(
     collection_name: str,
     testing: bool = False,
 ) -> dict[str, Any]:
-    """Create a KCWorks collection via the communities API if needed."""
+    """Create a KCWorks collection via the communities API if needed.
+
+    Args:
+        api_key: Bearer token.
+        collection_slug: Collection slug.
+        collection_name: Collection display name.
+        testing: Use the localhost instance when True.
+
+    Returns:
+        Existing or newly created community payload.
+    """
     return ensure_community(
         api_key, collection_slug, collection_name, testing=testing
     )
@@ -223,7 +266,7 @@ def run_import_job(
     api_key: str,
     json_location: str,
     files_location: list[str],
-    output_location: Optional[str],
+    output_location: str | None,
     slug: str,
     testing: bool = False,
     notify_owners: bool = False,

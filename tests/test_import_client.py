@@ -9,8 +9,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 import pytest
-
 from helpers.sample_metadata import sample_metadata_journal_article_pdf
+
 from kcworks_import_client import ImportClient, ImportResult
 from kcworks_import_client.client import serialize_metadata
 from kcworks_import_client.exceptions import ImportAPIError, ImportRequestError
@@ -18,7 +18,11 @@ from kcworks_import_client.exceptions import ImportAPIError, ImportRequestError
 
 @pytest.fixture
 def sample_files_dir() -> Path:
-    """Path to packaged sample files."""
+    """Path to packaged sample files.
+
+    Returns:
+        Directory containing sample upload files for tests.
+    """
     path = Path(__file__).resolve().parent / "helpers" / "sample_files"
     if not path.exists():
         pytest.skip("Sample files directory not found")
@@ -82,7 +86,9 @@ def test_import_client_file_tuple_and_non_json_body(sample_files_dir, monkeypatc
     assert result.exit_code == 1
 
 
-def test_import_client_accepts_list_metadata_and_progress(sample_files_dir, monkeypatch):
+def test_import_client_accepts_list_metadata_and_progress(
+    sample_files_dir, monkeypatch
+):
     """ImportClient posts in-memory metadata and invokes the progress callback."""
     sample_file = sample_files_dir / "sample.pdf"
     if not sample_file.exists():

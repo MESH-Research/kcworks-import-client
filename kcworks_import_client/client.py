@@ -64,9 +64,6 @@ def serialize_metadata(metadata: MetadataInput) -> str:
 
     Raises:
         TypeError: If ``metadata`` is an unsupported type.
-        OSError: If a path cannot be read.
-        json.JSONDecodeError: Not raised here; callers pass pre-validated data
-            when using path/string forms as opaque payloads.
     """
     if isinstance(metadata, Path):
         return metadata.read_text(encoding="utf-8")
@@ -123,6 +120,9 @@ class ImportClient:
             verify_ssl: Override TLS verification. Defaults from URL resolution
                 when ``None``.
             session: Optional ``requests.Session`` for connection reuse.
+
+        Raises:
+            ValueError: If ``api_key`` is empty.
         """
         if not api_key:
             raise ValueError("api_key is required")
@@ -189,8 +189,6 @@ class ImportClient:
 
         Raises:
             ImportRequestError: Network / transport failure before a response.
-            OSError: Metadata or file path cannot be opened.
-            TypeError: Unsupported ``metadata`` / ``files`` entry type.
             ValueError: Empty ``collection_id``.
         """
         if not collection_id:
@@ -259,7 +257,6 @@ class ImportClient:
 
         Raises:
             ImportAPIError: When the HTTP status is not 201 or 207.
-            ImportRequestError: Transport failure.
         """
         result = self.import_works(collection_id, metadata, files, **kwargs)
         if not result.ok:
@@ -275,7 +272,15 @@ class ImportClient:
     def _open_file_entry(
         entry: FileInput,
     ) -> tuple[str, BinaryIO, str, bool]:
-        """Normalize a file input to ``(filename, handle, mime, owns_handle)``."""
+        """Normalize a file input to ``(filename, handle, mime, owns_handle)``.
+
+        Returns:
+            Filename, binary handle, MIME type, and whether this method opened
+            the handle (caller must close it).
+
+        Raises:
+            TypeError: If ``entry`` is not a path or supported tuple form.
+        """
         if isinstance(entry, (str, Path)):
             path = Path(entry)
             handle = path.open("rb")

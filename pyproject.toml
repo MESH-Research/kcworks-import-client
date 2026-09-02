@@ -40,7 +40,9 @@ optional-dependencies.tests = [
   "PyYAML>=6",
   "pytest>=7.3",
   "pytest-cov>=6.2.1",
+  "pytest-ruff>=0.1",
   "ruff>=0.3",
+  "ty",
 ]
 optional-dependencies.dev = [
   "check-manifest",
@@ -58,17 +60,49 @@ include = ["kcworks_import_client*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+addopts = """
+--ruff
+--ignore=docs
+"""
 
 [tool.ruff]
 target-version = "py312"
 line-length = 88
 exclude = [
-  ".git",
-  ".venv",
-  "build",
-  "dist",
-  "*.egg-info",
+  "**/*.ipynb",
+  "docs",
+  "node_modules",
+  "tests/helpers",
 ]
+# temporarily removed C for complexity checks
+lint.select = ["B", "D", "DOC", "E", "F", "I", "UP"]
+# Now Ruff handles formatting, so enable formatting rules
+lint.ignore = [
+  "D412", # Missing blank line before closing docstring
+  # Keep some warnings disabled
+  "W1", # Indentation warnings
+  "W2", # Whitespace warnings
+  "W3", # Blank line warnings
+]
+lint.per-file-ignores."__init__.py" = ["D104", "E402", "F401"]
+lint.isort.known-first-party = ["kcworks_import_client", "tests"]
+lint.pydocstyle.convention = "google"
+lint.preview = true
 
-[tool.ruff.lint]
-select = ["E", "F", "I", "W"]
+[tool.ty]
+analysis = {}
+# Type checking with ty (replaces mypy). Mirrors the parent KCWorks
+# project's [tool.ty] settings; paths adapted to this package's layout.
+environment.python-version = "3.12"
+# Rule severities (ty uses rule names; mypy options translated below)
+# warn_redundant_casts = true
+rules.redundant-cast = "warn"
+# warn_unused_ignores = false → don't warn about unused type: ignore
+rules.unused-ignore-comment = "ignore"
+rules.unused-type-ignore-comment = "ignore"
+# ignore_missing_imports = true → suppress unresolved-import
+rules.unresolved-import = "ignore"
+# allow_untyped_globals = true → don't error on undeclared globals
+rules.unresolved-global = "ignore"
+# Don't type-check tests.
+src.exclude = ["tests"]

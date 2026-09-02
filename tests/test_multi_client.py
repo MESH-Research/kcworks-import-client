@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 import yaml
-
 from helpers.mock_apis import start_mock_apis
 from helpers.sample_metadata import sample_metadata_journal_article_pdf
+
 from kcworks_import_client import MultiCollectionImporter
 from kcworks_import_client.exceptions import CommunityError, ManifestError
 from kcworks_import_client.multi_client import (
@@ -21,7 +21,11 @@ from kcworks_import_client.multi_client import (
 
 @pytest.fixture
 def sample_files_dir() -> Path:
-    """Path to packaged sample files."""
+    """Path to packaged sample files.
+
+    Returns:
+        Directory containing sample upload files for tests.
+    """
     path = Path(__file__).resolve().parent / "helpers" / "sample_files"
     if not path.exists():
         pytest.skip("Sample files directory not found")
@@ -30,7 +34,11 @@ def sample_files_dir() -> Path:
 
 @pytest.fixture
 def import_bundle(tmp_path, sample_files_dir) -> Path:
-    """Temp dir with metadata.json and a sample PDF."""
+    """Temp dir with metadata.json and a sample PDF.
+
+    Returns:
+        Temporary directory containing metadata and a copied sample PDF.
+    """
     meta = tmp_path / "metadata.json"
     meta.write_text(
         json.dumps([sample_metadata_journal_article_pdf]),

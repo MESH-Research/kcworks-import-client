@@ -13,7 +13,11 @@ from kcworks_import_client import multi_collection_importer as multi
 
 @pytest.fixture
 def sample_files_dir() -> Path:
-    """Path to packaged sample files."""
+    """Path to packaged sample files.
+
+    Returns:
+        Directory containing sample upload files for tests.
+    """
     path = Path(__file__).resolve().parent / "helpers" / "sample_files"
     if not path.exists():
         pytest.skip("Sample files directory not found")

@@ -33,11 +33,20 @@ if command -v uv >/dev/null 2>&1; then
   fi
   uv pip install -e ".[tests]" --python .venv --quiet
   python_bin=".venv/bin/python"
+  ty_bin=".venv/bin/ty"
 else
   python -m pip install -e ".[tests]" --quiet
   python_bin="python"
+  ty_bin="ty"
 fi
 
+# Run ty (replaces mypy; settings live under [tool.ty] in pyproject.toml)
+echo "Running ty on the kcworks_import_client directory"
+"${ty_bin}" check kcworks_import_client/
+
+# Note: expansion of pytest_args looks like below to not cause an unbound
+# variable error when 1) "nounset" and 2) the array is empty.
+# Ruff runs via pytest-ruff (--ruff in pyproject.toml addopts).
 if [ ${#pytest_args[@]} -eq 0 ]; then
   echo "Running pytest"
   "${python_bin}" -m pytest -vv -s --disable-warnings tests/ \

@@ -52,7 +52,15 @@ def resolve_communities_base_url(*, testing: bool = False) -> tuple[str, bool]:
 
 
 def coerce_bool(value: Any, *, default: bool = False) -> bool:
-    """Coerce a manifest/CLI-style boolean value."""
+    """Coerce a manifest/CLI-style boolean value.
+
+    Args:
+        value: Value from a manifest or CLI argument.
+        default: Value used when ``value`` is ``None``.
+
+    Returns:
+        Coerced boolean.
+    """
     if isinstance(value, bool):
         return value
     if isinstance(value, str):
@@ -171,9 +179,6 @@ def topological_order(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     Returns:
         Entries ordered with parents first when both are in the manifest.
-
-    Raises:
-        ManifestError: If a ``parent_slug`` cycle is detected.
     """
     by_slug = {e["slug"]: e for e in entries}
     visiting: set[str] = set()
@@ -235,6 +240,9 @@ class MultiCollectionImporter:
             session: Shared ``requests.Session`` (also used by a default
                 :class:`ImportClient` when one is not supplied).
             log: Optional callback for human-readable progress lines.
+
+        Raises:
+            ValueError: If ``api_key`` is empty.
         """
         if not api_key:
             raise ValueError("api_key is required")
@@ -473,7 +481,15 @@ class MultiCollectionImporter:
 
     @staticmethod
     def resolve_path(path_value: str, manifest_dir: Path) -> str:
-        """Resolve a path relative to the manifest file's directory if needed."""
+        """Resolve a path relative to the manifest file's directory if needed.
+
+        Args:
+            path_value: Absolute or relative path string.
+            manifest_dir: Directory containing the manifest.
+
+        Returns:
+            Absolute resolved path string.
+        """
         path = Path(path_value)
         if not path.is_absolute():
             path = manifest_dir / path
@@ -520,14 +536,30 @@ class MultiCollectionImporter:
 
     @staticmethod
     def entry_notify_owners(entry: dict[str, Any], default: bool) -> bool:
-        """Resolve notify flag: per-entry override, else run-wide default."""
+        """Resolve notify flag: per-entry override, else run-wide default.
+
+        Args:
+            entry: Manifest collection entry.
+            default: Run-wide default when the entry omits the key.
+
+        Returns:
+            Whether to notify record owners.
+        """
         if "notify_record_owners" not in entry:
             return default
         return coerce_bool(entry["notify_record_owners"], default=default)
 
     @staticmethod
     def entry_id_scheme(entry: dict[str, Any], default: str) -> str:
-        """Resolve id_scheme: per-entry override, else run-wide default."""
+        """Resolve id_scheme: per-entry override, else run-wide default.
+
+        Args:
+            entry: Manifest collection entry.
+            default: Run-wide default when the entry omits a usable value.
+
+        Returns:
+            Import dedupe id scheme string.
+        """
         value = entry.get("id_scheme")
         if isinstance(value, str) and value.strip():
             return value.strip()
@@ -535,7 +567,15 @@ class MultiCollectionImporter:
 
     @staticmethod
     def entry_alternate_id_scheme(entry: dict[str, Any], default: str) -> str:
-        """Resolve alternate_id_scheme: per-entry override, else run-wide default."""
+        """Resolve alternate_id_scheme: per-entry override, else run-wide default.
+
+        Args:
+            entry: Manifest collection entry.
+            default: Run-wide default when the entry omits the key.
+
+        Returns:
+            Alternate import id scheme string (may be empty).
+        """
         if "alternate_id_scheme" in entry:
             value = entry.get("alternate_id_scheme")
             return value.strip() if isinstance(value, str) else ""
@@ -543,7 +583,15 @@ class MultiCollectionImporter:
 
     @staticmethod
     def entry_no_updates(entry: dict[str, Any], default: bool) -> bool:
-        """Resolve no_updates: per-entry override, else run-wide default."""
+        """Resolve no_updates: per-entry override, else run-wide default.
+
+        Args:
+            entry: Manifest collection entry.
+            default: Run-wide default when the entry omits the key.
+
+        Returns:
+            Whether metadata updates on existing matches are blocked.
+        """
         if "no_updates" not in entry:
             return default
         return coerce_bool(entry["no_updates"], default=default)
@@ -625,7 +673,6 @@ class MultiCollectionImporter:
 
         Raises:
             ManifestError: Invalid or incomplete manifest / paths.
-            CommunityError: Communities API failures.
         """
         manifest_path = str(manifest_path)
         manifest_dir = Path(manifest_path).resolve().parent
