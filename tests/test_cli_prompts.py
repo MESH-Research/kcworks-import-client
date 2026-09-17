@@ -68,19 +68,44 @@ def test_get_files_paths_from_env_and_prompt(monkeypatch, sample_files_dir):
     assert api_importer._get_files_paths(args) == [str(pdf)]
 
 
-def test_get_output_path_prompt_skip_and_env(monkeypatch, tmp_path):
-    """Output path: env, prompt skip (None), and prompt value."""
-    out = tmp_path / "out.json"
-    monkeypatch.setenv("KCWORKS_IMPORT_OUTPUT_PATH", str(out))
-    args = argparse.Namespace(output=None)
-    assert api_importer._get_output_path(args) == str(out)
+def test_get_output_folder_prompt_skip_and_env(monkeypatch, tmp_path):
+    """Output folder: env, prompt Enter→cwd, prompt value, skip-prompt flag."""
+    out_dir = tmp_path / "reports"
+    out_dir.mkdir()
+    default_dir = str(tmp_path)
+
+    monkeypatch.setenv("KCWORKS_IMPORT_OUTPUT_PATH", str(out_dir))
+    args = argparse.Namespace(output=None, skip_output_prompt=False)
+    assert api_importer._get_output_folder(args, default_dir=default_dir) == str(
+        out_dir
+    )
 
     monkeypatch.delenv("KCWORKS_IMPORT_OUTPUT_PATH", raising=False)
     monkeypatch.setattr("builtins.input", lambda _prompt="": "")
-    assert api_importer._get_output_path(args) is None
+    assert (
+        api_importer._get_output_folder(args, default_dir=default_dir) == default_dir
+    )
 
-    monkeypatch.setattr("builtins.input", lambda _prompt="": str(out))
-    assert api_importer._get_output_path(args) == str(out)
+    monkeypatch.setattr("builtins.input", lambda _prompt="": str(out_dir))
+    assert api_importer._get_output_folder(args, default_dir=default_dir) == str(
+        out_dir
+    )
+
+    args_skip = argparse.Namespace(output=None, skip_output_prompt=True)
+    assert (
+        api_importer._get_output_folder(args_skip, default_dir=default_dir)
+        == default_dir
+    )
+
+
+def test_resolve_output_file_path_under_dir(tmp_path):
+    """Library helper builds a timestamped report path under the given dir."""
+    from kcworks_import_client.client import resolve_output_file_path
+
+    path = resolve_output_file_path(str(tmp_path), "my-collection")
+    assert path.startswith(str(tmp_path))
+    assert "kcworks_import_my-collection_" in path
+    assert path.endswith(".json")
 
 
 def test_get_manifest_path_from_prompt(monkeypatch, tmp_path):

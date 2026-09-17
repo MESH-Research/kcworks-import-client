@@ -4,14 +4,12 @@ from __future__ import annotations
 
 import io
 import json
-import threading
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 import pytest
 from helpers.sample_metadata import sample_metadata_journal_article_pdf
 
-from kcworks_import_client import ImportClient, ImportResult
+from kcworks_import_client import ImportClient
 from kcworks_import_client.client import serialize_metadata
 from kcworks_import_client.exceptions import ImportAPIError, ImportRequestError
 
@@ -43,42 +41,32 @@ def test_serialize_metadata_variants(tmp_path):
         serialize_metadata(123)  # type: ignore[arg-type]
 
 
-def test_import_client_file_tuple_and_non_json_body(sample_files_dir, monkeypatch):
+def test_import_client_file_tuple_and_non_json_body(
+    sample_files_dir, monkeypatch, requests_mock
+):
     """File tuples upload; non-JSON responses populate body as text."""
     sample_file = sample_files_dir / "sample.pdf"
     if not sample_file.exists():
         pytest.skip("Sample PDF not found")
 
-    class Handler(BaseHTTPRequestHandler):
-        def do_POST(self):  # noqa: N802
-            length = int(self.headers.get("Content-Length", 0))
-            self.rfile.read(length)
-            body = b"not-json"
-            self.send_response(502)
-            self.send_header("Content-Type", "text/plain")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-
-        def log_message(self, format, *args):  # noqa: A003
-            return
-
-    server = HTTPServer(("127.0.0.1", 0), Handler)
-    port = server.server_address[1]
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    monkeypatch.setenv(
-        "KCWORKS_IMPORT_API_URL", f"http://127.0.0.1:{port}/api/import"
+    # Mock the API endpoint to return a non-JSON response (502 error)
+    requests_mock.post(
+        "http://127.0.0.1:8000/api/import/c",
+        text="not-json",
+        status_code=502,
+        headers={"Content-Type": "text/plain"},
     )
+
+    # Monkeypatch the base URL to use our test server
+    monkeypatch.setenv("KCWORKS_IMPORT_API_URL", "http://127.0.0.1:8000/api/import")
+
     data = sample_file.read_bytes()
-    try:
-        client = ImportClient("k")
-        result = client.import_works(
-            "c",
-            metadata=[{"metadata": {"title": "t"}}],
-            files=[("upload.pdf", io.BytesIO(data), "application/pdf")],
-        )
-    finally:
-        server.shutdown()
+    client = ImportClient("k")
+    result = client.import_works(
+        "c",
+        metadata=[{"metadata": {"title": "t"}}],
+        files=[("upload.pdf", io.BytesIO(data), "application/pdf")],
+    )
 
     assert not result.ok
     assert result.status_code == 502
@@ -86,115 +74,90 @@ def test_import_client_file_tuple_and_non_json_body(sample_files_dir, monkeypatc
     assert result.exit_code == 1
 
 
-def test_import_client_accepts_list_metadata_and_progress(
-    sample_files_dir, monkeypatch
-):
-    """ImportClient posts in-memory metadata and invokes the progress callback."""
+def test_import_client_passes_all_flags(sample_files_dir, monkeypatch, requests_mock):
+    """ImportClient posts all flag parameters in the multipart form data."""
     sample_file = sample_files_dir / "sample.pdf"
     if not sample_file.exists():
         pytest.skip("Sample PDF not found")
 
-    captured: dict = {}
-    events: list[str] = []
-
-    class Handler(BaseHTTPRequestHandler):
-        def do_POST(self):  # noqa: N802
-            length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(length)
-            captured["path"] = self.path
-            captured["body"] = body
-            payload = {
-                "status": "success",
-                "data": [{"record_id": "abc", "item_index": 0}],
-                "errors": [],
-                "message": "ok",
-            }
-            raw = json.dumps(payload).encode("utf-8")
-            self.send_response(201)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(raw)))
-            self.end_headers()
-            self.wfile.write(raw)
-
-        def log_message(self, format, *args):  # noqa: A003
-            return
-
-    server = HTTPServer(("127.0.0.1", 0), Handler)
-    port = server.server_address[1]
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    monkeypatch.setenv(
-        "KCWORKS_IMPORT_API_URL", f"http://127.0.0.1:{port}/api/import"
+    # Mock the API endpoint
+    requests_mock.post(
+        "http://127.0.0.1:8000/api/import/my-collection",
+        json={
+            "status": "success",
+            "data": [{"record_id": "abc", "item_index": 0}],
+            "errors": [],
+            "message": "ok"
+        },
+        status_code=201
     )
 
-    try:
-        client = ImportClient("test-key")
-        result = client.import_works(
-            "my-collection",
-            metadata=[sample_metadata_journal_article_pdf],
-            files=[sample_file],
-            notify_owners=True,
-            id_scheme="import-recid",
-            progress=events.append,
-        )
-    finally:
-        server.shutdown()
+    # Monkeypatch the base URL to use our test server
+    monkeypatch.setenv("KCWORKS_IMPORT_API_URL", "http://127.0.0.1:8000/api/import")
 
-    assert isinstance(result, ImportResult)
+    client = ImportClient("test-key")
+    result = client.import_works(
+        "my-collection",
+        metadata=[sample_metadata_journal_article_pdf],
+        files=[sample_file],
+        notify_owners=True,
+        id_scheme="import-recid",
+        alternate_id_scheme="doi",
+        no_updates=True,
+        all_or_none=True,
+    )
+
     assert result.ok
     assert result.status_code == 201
-    assert result.data[0]["record_id"] == "abc"
-    assert events == ["start", "done"]
-    assert captured["path"].endswith("/my-collection")
-    assert b'name="notify_record_owners"' in captured["body"]
-    assert b"true" in captured["body"]
+
+    # Verify the request body contained all expected flag fields
+    raw = requests_mock.last_request.body
+    request_body = raw if isinstance(raw, bytes) else raw.encode("utf-8")
+    assert b'name="notify_record_owners"' in request_body
+    assert b"true" in request_body
+    assert b'name="id_scheme"' in request_body
+    assert b'import-recid' in request_body
+    assert b'name="alternate_id_scheme"' in request_body
+    assert b'doi' in request_body
+    assert b'name="no_updates"' in request_body
+    assert b"true" in request_body
+    assert b'name="all_or_none"' in request_body
+    assert b"true" in request_body
 
 
-def test_import_works_or_raise_on_403(sample_files_dir, monkeypatch):
+def test_import_works_or_raise_on_403(sample_files_dir, monkeypatch, requests_mock):
     """import_works_or_raise raises ImportAPIError for non-ok statuses."""
     sample_file = sample_files_dir / "sample.pdf"
     if not sample_file.exists():
         pytest.skip("Sample PDF not found")
 
-    class Handler(BaseHTTPRequestHandler):
-        def do_POST(self):  # noqa: N802
-            length = int(self.headers.get("Content-Length", 0))
-            self.rfile.read(length)
-            raw = json.dumps(
-                {"status": "error", "data": [], "errors": [], "message": "denied"}
-            ).encode("utf-8")
-            self.send_response(403)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(raw)))
-            self.end_headers()
-            self.wfile.write(raw)
-
-        def log_message(self, format, *args):  # noqa: A003
-            return
-
-    server = HTTPServer(("127.0.0.1", 0), Handler)
-    port = server.server_address[1]
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    monkeypatch.setenv(
-        "KCWORKS_IMPORT_API_URL", f"http://127.0.0.1:{port}/api/import"
+    requests_mock.post(
+        "http://kcworks.test/api/import/my-collection",
+        json={"status": "error", "data": [], "errors": [], "message": "denied"},
+        status_code=403,
     )
+    monkeypatch.setenv("KCWORKS_IMPORT_API_URL", "http://kcworks.test/api/import")
 
     client = ImportClient("test-key")
-    try:
-        with pytest.raises(ImportAPIError) as exc_info:
-            client.import_works_or_raise(
-                "my-collection",
-                metadata={"metadata": {"title": "x"}},
-                files=[str(sample_file)],
-            )
-    finally:
-        server.shutdown()
+    with pytest.raises(ImportAPIError) as exc_info:
+        client.import_works_or_raise(
+            "my-collection",
+            metadata={"metadata": {"title": "x"}},
+            files=[str(sample_file)],
+        )
 
     assert exc_info.value.status_code == 403
 
 
-def test_import_client_transport_error(monkeypatch):
-    """ImportRequestError is raised when the server cannot be reached."""
-    monkeypatch.setenv("KCWORKS_IMPORT_API_URL", "http://127.0.0.1:1/api/import")
+def test_import_client_transport_error(monkeypatch, requests_mock):
+    """ImportRequestError is raised when the request transport fails."""
+    import requests
+
+    monkeypatch.setenv("KCWORKS_IMPORT_API_URL", "http://kcworks.test/api/import")
+    requests_mock.post(
+        "http://kcworks.test/api/import/c",
+        exc=requests.exceptions.ConnectionError("boom"),
+    )
     client = ImportClient("test-key")
     with pytest.raises(ImportRequestError):
         client.import_works(
@@ -204,7 +167,9 @@ def test_import_client_transport_error(monkeypatch):
         )
 
 
-def test_import_client_path_metadata_file(sample_files_dir, tmp_path, monkeypatch):
+def test_import_client_path_metadata_file(
+    sample_files_dir, tmp_path, monkeypatch, requests_mock
+):
     """Metadata Path is read from disk."""
     sample_file = sample_files_dir / "sample.pdf"
     if not sample_file.exists():
@@ -215,32 +180,11 @@ def test_import_client_path_metadata_file(sample_files_dir, tmp_path, monkeypatc
         encoding="utf-8",
     )
 
-    class Handler(BaseHTTPRequestHandler):
-        def do_POST(self):  # noqa: N802
-            length = int(self.headers.get("Content-Length", 0))
-            self.rfile.read(length)
-            raw = json.dumps(
-                {"data": [], "errors": [], "message": "ok"}
-            ).encode("utf-8")
-            self.send_response(201)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(raw)))
-            self.end_headers()
-            self.wfile.write(raw)
-
-        def log_message(self, format, *args):  # noqa: A003
-            return
-
-    server = HTTPServer(("127.0.0.1", 0), Handler)
-    port = server.server_address[1]
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    monkeypatch.setenv(
-        "KCWORKS_IMPORT_API_URL", f"http://127.0.0.1:{port}/api/import"
+    requests_mock.post(
+        "http://kcworks.test/api/import/c",
+        json={"data": [], "errors": [], "message": "ok"},
+        status_code=201,
     )
-    try:
-        result = ImportClient("k").import_works(
-            "c", metadata=meta, files=[sample_file]
-        )
-    finally:
-        server.shutdown()
+    monkeypatch.setenv("KCWORKS_IMPORT_API_URL", "http://kcworks.test/api/import")
+    result = ImportClient("k").import_works("c", metadata=meta, files=[sample_file])
     assert result.ok

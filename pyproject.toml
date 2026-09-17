@@ -7,7 +7,7 @@ name = "kcworks-import-client"
 version = "0.1.0"
 description = "Standalone client scripts for importing works into KCWorks via the import API"
 readme = "README.md"
-keywords = ["import", "kcworks", "inveniordm", "client"]
+keywords = ["client", "import", "inveniordm", "kcworks"]
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "MESH Research", email = "scottia4@msu.edu" }]
@@ -21,13 +21,13 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = [
-  "requests>=2.28",
-]
-optional-dependencies.yaml = [
-  "PyYAML>=6",
+dependencies = ["requests>=2.28"]
+optional-dependencies.dev = [
+  "check-manifest",
+  "kcworks-import-client[docs,tests]",
 ]
 optional-dependencies.docs = [
   "furo>=2023",
@@ -37,43 +37,28 @@ optional-dependencies.docs = [
   "sphinx-copybutton>=0.5",
 ]
 optional-dependencies.tests = [
-  "PyYAML>=6",
   "pytest>=7.3",
   "pytest-cov>=6.2.1",
   "pytest-ruff>=0.1",
+  "pyyaml>=6",
+  "requests-mock",
   "ruff>=0.3",
   "ty",
 ]
-optional-dependencies.dev = [
-  "check-manifest",
-  "kcworks-import-client[docs,tests]",
-]
-urls.Homepage = "https://github.com/MESH-Research/kcworks-import-client"
+optional-dependencies.yaml = ["pyyaml>=6"]
 urls.Documentation = "https://mesh-research.github.io/kcworks-import-client/"
+urls.Homepage = "https://github.com/MESH-Research/kcworks-import-client"
 scripts.kcworks-api-importer = "kcworks_import_client.api_importer:main"
 scripts.kcworks-multi-collection-importer = "kcworks_import_client.multi_collection_importer:cli"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["kcworks_import_client*"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["."]
-addopts = """
---ruff
---ignore=docs
-"""
+[tool.setuptools]
+packages.find.where = ["."]
+packages.find.include = ["kcworks_import_client*"]
 
 [tool.ruff]
 target-version = "py312"
 line-length = 88
-exclude = [
-  "**/*.ipynb",
-  "docs",
-  "node_modules",
-  "tests/helpers",
-]
+exclude = ["**/*.ipynb", "docs", "node_modules", "tests/helpers"]
 # temporarily removed C for complexity checks
 lint.select = ["B", "D", "DOC", "E", "F", "I", "UP"]
 # Now Ruff handles formatting, so enable formatting rules
@@ -106,3 +91,11 @@ rules.unresolved-import = "ignore"
 rules.unresolved-global = "ignore"
 # Don't type-check tests.
 src.exclude = ["tests"]
+
+[tool.pytest]
+ini_options.testpaths = ["tests"]
+ini_options.pythonpath = ["."]
+ini_options.addopts = """
+--ruff
+--ignore=docs
+"""

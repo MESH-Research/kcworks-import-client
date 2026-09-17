@@ -353,9 +353,7 @@ class MultiCollectionImporter:
         """
         existing = self.get_community(slug)
         if existing is not None:
-            self.log(
-                f"  Collection {slug!r} already exists (id={existing.get('id')})"
-            )
+            self.log(f"  Collection {slug!r} already exists (id={existing.get('id')})")
             return existing
         return self.create_community(slug, name)
 
@@ -435,9 +433,7 @@ class MultiCollectionImporter:
         existing_parent = child.get("parent") or {}
         existing_id = existing_parent.get("id")
         if existing_id and str(existing_id) == str(parent["id"]):
-            self.log(
-                f"  {child_slug!r} already linked under {parent_slug!r}; skipping"
-            )
+            self.log(f"  {child_slug!r} already linked under {parent_slug!r}; skipping")
             return
         if existing_id:
             raise CommunityError(
@@ -458,8 +454,7 @@ class MultiCollectionImporter:
             )
         except requests.exceptions.RequestException as exc:
             raise CommunityError(
-                f"Failed to request parent link {child_slug!r} → {parent_slug!r}: "
-                f"{exc}"
+                f"Failed to request parent link {child_slug!r} → {parent_slug!r}: {exc}"
             ) from exc
 
         if response.status_code not in (200, 201):
@@ -480,7 +475,7 @@ class MultiCollectionImporter:
             )
 
     @staticmethod
-    def resolve_path(path_value: str, manifest_dir: Path) -> str:
+    def resolve_path(path_value: str, manifest_dir: Path) -> str | None:
         """Resolve a path relative to the manifest file's directory if needed.
 
         Args:
@@ -488,17 +483,18 @@ class MultiCollectionImporter:
             manifest_dir: Directory containing the manifest.
 
         Returns:
-            Absolute resolved path string.
+            Absolute resolved path string, or ``None`` when ``path_value`` is
+            empty/falsy.
         """
+        if not path_value:
+            return None
         path = Path(path_value)
         if not path.is_absolute():
             path = manifest_dir / path
         return str(path.resolve())
 
     @staticmethod
-    def normalize_files(
-        files_value: Any, manifest_dir: Path, slug: str
-    ) -> list[str]:
+    def normalize_files(files_value: Any, manifest_dir: Path, slug: str) -> list[str]:
         """Normalize and validate the files field from a manifest entry.
 
         Args:
@@ -596,6 +592,38 @@ class MultiCollectionImporter:
             return default
         return coerce_bool(entry["no_updates"], default=default)
 
+    @staticmethod
+    def entry_all_or_none(entry: dict[str, Any], default: bool) -> bool:
+        """Resolve all_or_none: per-entry override, else run-wide default.
+
+        Args:
+            entry: Manifest collection entry.
+            default: Run-wide default when the entry omits the key.
+
+        Returns:
+            Whether partially successful import jobs should be aborted and
+            rolled back.
+        """
+        if "all_or_none" not in entry:
+            return default
+        return coerce_bool(entry["all_or_none"], default=default)
+
+    @staticmethod
+    def entry_suppress_reports(entry: dict[str, Any], default: bool) -> bool:
+        """Resolve suppress_reports: per-entry override, else run-wide default.
+
+        Args:
+            entry: Manifest collection entry.
+            default: Run-wide default when the entry omits the key.
+
+        Returns:
+            Whether JSON report files with the result output from each
+            import job should be written to a local folder.
+        """
+        if "suppress_reports" not in entry:
+            return default
+        return coerce_bool(entry["suppress_reports"], default=default)
+
     def import_collection(
         self,
         slug: str,
@@ -606,6 +634,8 @@ class MultiCollectionImporter:
         id_scheme: str = "import-recid",
         alternate_id_scheme: str = "",
         no_updates: bool = False,
+        all_or_none: bool = False,
+        suppress_reports: bool = False,
         progress: ProgressCallback | None = None,
         output_path: str | None = None,
     ) -> ImportResult:
@@ -619,6 +649,9 @@ class MultiCollectionImporter:
             id_scheme: Forwarded to the import client.
             alternate_id_scheme: Forwarded to the import client.
             no_updates: Forwarded to the import client.
+            all_or_none: Forwarded to the import client (API form field).
+            suppress_reports: When True, do not write ``output_path`` even if
+                set. Local only; not sent to the API.
             progress: Optional progress callback.
             output_path: Optional path to write the response JSON/text.
 
@@ -634,9 +667,10 @@ class MultiCollectionImporter:
             id_scheme=id_scheme,
             alternate_id_scheme=alternate_id_scheme,
             no_updates=no_updates,
+            all_or_none=all_or_none,
             progress=progress,
         )
-        if output_path:
+        if output_path and not suppress_reports:
             with open(output_path, "w", encoding="utf-8") as handle:
                 if isinstance(result.body, dict):
                     json.dump(result.body, handle, indent=2)
@@ -653,6 +687,8 @@ class MultiCollectionImporter:
         id_scheme: str = "import-recid",
         alternate_id_scheme: str = "",
         no_updates: bool = False,
+        all_or_none: bool = False,
+        suppress_reports: bool = False,
         progress: ProgressCallback | None = None,
     ) -> MultiCollectionImportResult:
         """Run the multi-collection import from a manifest.
@@ -666,6 +702,9 @@ class MultiCollectionImporter:
             id_scheme: Default import dedupe scheme.
             alternate_id_scheme: Default secondary scheme.
             no_updates: Default no-updates flag.
+            all_or_none: Default all-or-none flag (API); overridable per entry.
+            suppress_reports: Default suppress local report writes; overridable
+                per entry. When True, entry ``output`` paths are ignored.
             progress: Optional progress callback for each import POST.
 
         Returns:
@@ -687,14 +726,15 @@ class MultiCollectionImporter:
         self.log(
             f"Environment: {'Testing (localhost)' if self.testing else 'Production'}"
         )
-        self.log(
-            f"Notify record owners (default): "
-            f"{'yes' if notify_owners else 'no'}"
-        )
+        self.log(f"Notify record owners (default): {'yes' if notify_owners else 'no'}")
         self.log(f"Import id scheme (default): {id_scheme}")
         if alternate_id_scheme:
             self.log(f"Alternate id scheme (default): {alternate_id_scheme}")
         self.log(f"No-updates (default): {'yes' if no_updates else 'no'}")
+        self.log(f"All-or-none (default): {'yes' if all_or_none else 'no'}")
+        self.log(
+            f"Suppress local reports (default): {'yes' if suppress_reports else 'no'}"
+        )
         self.log("=" * 70)
 
         outcome = MultiCollectionImportResult()
@@ -755,12 +795,15 @@ class MultiCollectionImporter:
                 )
 
             files_paths = self.normalize_files(files, manifest_dir, entry["slug"])
+            entry_suppress = self.entry_suppress_reports(entry, suppress_reports)
             output_path = entry.get("output")
-            if output_path:
+            if output_path and not entry_suppress:
                 output_path = self.resolve_path(str(output_path), manifest_dir)
                 out_dir = os.path.dirname(output_path)
                 if out_dir and not os.path.isdir(out_dir):
                     raise ManifestError(f"Output directory does not exist: {out_dir}")
+            else:
+                output_path = None
 
             result = self.import_collection(
                 entry["slug"],
@@ -772,6 +815,8 @@ class MultiCollectionImporter:
                     entry, alternate_id_scheme
                 ),
                 no_updates=self.entry_no_updates(entry, no_updates),
+                all_or_none=self.entry_all_or_none(entry, all_or_none),
+                suppress_reports=entry_suppress,
                 progress=progress,
                 output_path=output_path,
             )

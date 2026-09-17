@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 from .api_importer import _get_api_key
+from .client import resolve_output_file_path
 from .exceptions import CommunityError, ManifestError
 from .multi_client import (
     MultiCollectionImporter,
@@ -116,17 +117,51 @@ def _entry_no_updates(entry: dict[str, Any], default: bool) -> bool:
     return MultiCollectionImporter.entry_no_updates(entry, default)
 
 
-def _resolve_path(path_value: str, manifest_dir: Path) -> str:
+def _entry_all_or_none(entry: dict[str, Any], default: bool) -> bool:
+    return MultiCollectionImporter.entry_all_or_none(entry, default)
+
+
+def _entry_suppress_reports(entry: dict[str, Any], default: bool) -> bool:
+    return MultiCollectionImporter.entry_suppress_reports(entry, default)
+
+
+def _resolve_meta_path(path_value: str, manifest_dir: Path) -> str:
     return MultiCollectionImporter.resolve_path(path_value, manifest_dir)
 
 
-def _normalize_files(
-    files_value: Any, manifest_dir: Path, slug: str
-) -> list[str]:
+def _resolve_output_path(
+    default_path: str,
+    entry_path: str | None,
+    manifest_dir: Path,
+    community_id: str,
+) -> str:
+    """Resolve a per-collection report file path for the multi CLI.
+
+    Empty CLI/entry paths default to the manifest directory (no prompt).
+
+    Args:
+        default_path: Run-wide ``--output`` folder (may be empty).
+        entry_path: Optional per-entry ``output`` from the manifest.
+        manifest_dir: Directory containing the manifest file.
+        community_id: Slug/id embedded in the report filename.
+
+    Returns:
+        Absolute path to a timestamped report JSON file.
+
+    Raises:
+        ValueError: If the chosen output directory does not exist.
+    """
+    local_output_path = entry_path if entry_path else default_path
+    absolute_path = MultiCollectionImporter.resolve_path(
+        local_output_path, manifest_dir
+    )
+    output_dir = absolute_path if absolute_path else str(manifest_dir)
+    return resolve_output_file_path(output_dir, community_id)
+
+
+def _normalize_files(files_value: Any, manifest_dir: Path, slug: str) -> list[str]:
     try:
-        return MultiCollectionImporter.normalize_files(
-            files_value, manifest_dir, slug
-        )
+        return MultiCollectionImporter.normalize_files(files_value, manifest_dir, slug)
     except ManifestError as exc:
         _exit_on_error(exc)
 
@@ -257,22 +292,22 @@ def run_collection_creation_job(
     Returns:
         Existing or newly created community payload.
     """
-    return ensure_community(
-        api_key, collection_slug, collection_name, testing=testing
-    )
+    return ensure_community(api_key, collection_slug, collection_name, testing=testing)
 
 
 def run_import_job(
     api_key: str,
     json_location: str,
     files_location: list[str],
-    output_location: str | None,
+    output_path: str | None,
     slug: str,
     testing: bool = False,
     notify_owners: bool = False,
     id_scheme: str = "import-recid",
     alternate_id_scheme: str = "",
     no_updates: bool = False,
+    all_or_none: bool = False,
+    suppress_reports: bool = False,
 ) -> int:
     """Import one record batch into a single collection (CLI wrapper).
 
@@ -287,12 +322,14 @@ def run_import_job(
         collection_id=slug,
         metadata_path=json_location,
         files_paths=files_location,
-        output_path=output_location,
+        output_path=output_path,
         testing=testing,
         notify_owners=notify_owners,
         id_scheme=id_scheme,
         alternate_id_scheme=alternate_id_scheme,
         no_updates=no_updates,
+        all_or_none=all_or_none,
+        suppress_reports=suppress_reports,
     )
 
 
@@ -301,10 +338,13 @@ def main(
     manifest_path: str,
     assign_parents: bool,
     testing: bool = False,
+    output_path: str = "",
     notify_owners: bool = False,
     id_scheme: str = "import-recid",
     alternate_id_scheme: str = "",
     no_updates: bool = False,
+    all_or_none: bool = False,
+    suppress_reports: bool = False,
 ) -> int:
     """Run the multi-collection import from a manifest (CLI wrapper).
 
@@ -324,14 +364,29 @@ def main(
         print(f"Collections: {len(ordered)}")
         print(f"Assign parents: {'yes' if assign_parents else 'no'}")
         print(f"Environment: {'Testing (localhost)' if testing else 'Production'}")
+        print("=" * 70)
         print(
-            f"Notify record owners (default): "
-            f"{'yes' if notify_owners else 'no'}"
+            "The following settings are defaults that may be overridden for "
+            "particular collection imports in the manifest file:"
         )
-        print(f"Import id scheme (default): {id_scheme}")
+        if not suppress_reports:
+            print(
+                "    Save output reports to: "
+                f"{output_path if output_path else manifest_dir}"
+            )
+        else:
+            print("    Save output report files? no")
+        print(
+            "    Update any existing version of the same record (default)?"
+            f"{'yes' if not no_updates else 'no'}"
+        )
+        print(
+            f"Allow partial successes (default)? {'yes' if not all_or_none else 'no'}"
+        )
+        print(f"Notify record owners (default)? {'yes' if notify_owners else 'no'}")
+        print(f"    Import id scheme (default): {id_scheme}")
         if alternate_id_scheme:
-            print(f"Alternate id scheme (default): {alternate_id_scheme}")
-        print(f"No-updates (default): {'yes' if no_updates else 'no'}")
+            print(f"    Alternate id scheme (default): {alternate_id_scheme}")
         print("=" * 70)
 
         communities: dict[str, dict[str, Any]] = {}
@@ -370,49 +425,47 @@ def main(
 
         print("\n=== Importing records ===")
         overall_ok = True
-        for entry in ordered:
+        for index, entry in enumerate(ordered):
             metadata = entry.get("metadata")
             files = entry.get("files")
+            slug = entry.get("slug")
+            if not slug:
+                _print_error(f"Manifest entry {index + 1} has no community slug.")
+                sys.exit(1)
             if not metadata and not files:
-                print(
-                    f"  Skipping import for {entry['slug']!r} "
-                    "(no metadata/files in manifest)"
-                )
+                print(f"  Skipping import for {slug!r} (no metadata/files in manifest)")
                 continue
             if not metadata:
-                _print_error(
-                    f"Entry {entry['slug']!r} has files but no metadata path."
-                )
+                _print_error(f"Entry {slug!r} has files but no metadata path.")
                 sys.exit(1)
             if not files:
-                _print_error(
-                    f"Entry {entry['slug']!r} has metadata but no files path(s)."
-                )
+                _print_error(f"Entry {slug!r} has metadata but no files path(s).")
                 sys.exit(1)
 
-            metadata_path_resolved = _resolve_path(str(metadata), manifest_dir)
+            metadata_path_resolved = _resolve_meta_path(str(metadata), manifest_dir)
             if not os.path.isfile(metadata_path_resolved):
                 _print_error(
-                    f"Metadata file not found for {entry['slug']!r}: "
-                    f"{metadata_path_resolved}"
+                    f"Metadata file not found for {slug!r}: {metadata_path_resolved}"
                 )
                 sys.exit(1)
 
-            files_paths = _normalize_files(files, manifest_dir, entry["slug"])
-            output_path = entry.get("output")
-            if output_path:
-                output_path = _resolve_path(str(output_path), manifest_dir)
-                out_dir = os.path.dirname(output_path)
-                if out_dir and not os.path.isdir(out_dir):
-                    _print_error(f"Output directory does not exist: {out_dir}")
+            files_paths = _normalize_files(files, manifest_dir, slug)
+            output_path_resolved: str | None = None
+            if not _entry_suppress_reports(entry, suppress_reports):
+                try:
+                    output_path_resolved = _resolve_output_path(
+                        output_path, entry.get("output"), manifest_dir, slug
+                    )
+                except ValueError as exc:
+                    _print_error(str(exc))
                     sys.exit(1)
 
             code = run_import_job(
                 api_key=api_key,
                 json_location=metadata_path_resolved,
                 files_location=files_paths,
-                output_location=output_path,
-                slug=entry["slug"],
+                output_path=output_path_resolved,
+                slug=slug,
                 testing=testing,
                 notify_owners=_entry_notify_owners(entry, notify_owners),
                 id_scheme=_entry_id_scheme(entry, id_scheme),
@@ -420,10 +473,12 @@ def main(
                     entry, alternate_id_scheme
                 ),
                 no_updates=_entry_no_updates(entry, no_updates),
+                all_or_none=_entry_all_or_none(entry, all_or_none),
+                suppress_reports=_entry_suppress_reports(entry, suppress_reports),
             )
             if code != 0:
                 overall_ok = False
-                print(f"⚠ Import for {entry['slug']!r} reported failure")
+                print(f"⚠ Import for {slug!r} reported failure")
 
         print("")
         print("=" * 70)
@@ -488,9 +543,7 @@ def cli() -> None:
     print("=" * 70)
 
     parser = argparse.ArgumentParser(
-        description=(
-            "Import works into multiple KCWorks collections from a manifest."
-        )
+        description=("Import works into multiple KCWorks collections from a manifest.")
     )
     parser.add_argument(
         "--api-key",
@@ -512,11 +565,19 @@ def cli() -> None:
         ),
     )
     parser.add_argument(
+        "--output",
+        default="",
+        help=(
+            "Optional path to the folder where the result JSON report "
+            "files will be written, one for each collection import. Defaults "
+            "to the manifest file's directory. Ignored if --suppress-reports "
+            "flag is passed."
+        ),
+    )
+    parser.add_argument(
         "--testing",
         action="store_true",
-        help=(
-            "Use a local testing KCWorks instance instead of production."
-        ),
+        help=("Use a local testing KCWorks instance instead of production."),
     )
     parser.add_argument(
         "--notify-record-owners",
@@ -554,6 +615,23 @@ def cli() -> None:
             "(see import API docs)."
         ),
     )
+    parser.add_argument(
+        "--all-or-none",
+        action="store_true",
+        help=(
+            "If any of the records fails to import successfully, abort the whole "
+            "import job and roll back any created records. Do not proceed with a "
+            "partial import."
+        ),
+    )
+    parser.add_argument(
+        "--suppress-reports",
+        action="store_true",
+        help=(
+            "Do not write import result reports to JSON documents locally."
+            "Output will still be displayed on the command line."
+        ),
+    )
 
     args = parser.parse_args()
     api_key = _get_api_key(args)
@@ -562,11 +640,14 @@ def cli() -> None:
         api_key,
         manifest_path,
         args.assign_parents,
+        output_path=args.output,
         testing=args.testing,
         notify_owners=args.notify_record_owners,
         id_scheme=args.id_scheme,
         alternate_id_scheme=args.alternate_id_scheme,
         no_updates=args.no_updates,
+        all_or_none=args.all_or_none,
+        suppress_reports=args.suppress_reports,
     )
     sys.exit(exit_code)
 

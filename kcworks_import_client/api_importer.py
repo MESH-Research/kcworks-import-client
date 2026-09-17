@@ -33,9 +33,15 @@ Command-Line Arguments:
         or prompts interactively.
 
     --output PATH
-        Optional path to save the API response as JSON. If not provided, checks
-        KCWORKS_IMPORT_OUTPUT_PATH environment variable, or prompts interactively
-        (can be skipped by pressing Enter).
+        Optional path to a folder where the API response will be saved as a JSON
+        report. If not provided, checks KCWORKS_IMPORT_OUTPUT_PATH environment
+        variable, or prompts interactively. (Can be skipped by pressing Enter,
+        in which case it defaults to the current working directory). Ignored if
+        --suppress-reports is provided.
+
+    --skip-output-prompt
+        Skip the interactive output-folder prompt and use the current working
+        directory when neither --output nor KCWORKS_IMPORT_OUTPUT_PATH is set.
 
     --notify-record-owners
         Enable email notification of users designated as record owners.
@@ -43,13 +49,13 @@ Command-Line Arguments:
 
     --id-scheme SCHEME
         Identifier scheme used for import deduplication (form field
-        ``id_scheme``). Default: ``import-recid``. The scheme must already be
-        defined in KCWorks (``RDM_RECORDS_IDENTIFIERS_SCHEMES``), or arranged
+        `id_scheme`). Default: `import-recid`. The scheme must already be
+        defined in KCWorks (RDM_RECORDS_IDENTIFIERS_SCHEMES), or arranged
         with the KCWorks team for addition before import.
 
     --alternate-id-scheme SCHEME
         Optional secondary scheme for deduplication (form field
-        ``alternate_id_scheme``). Same constraint as ``--id-scheme``.
+        `alternate_id_scheme`). Same constraint as --id-scheme.
 
     --no-updates
         Refuse to change an existing matched record when metadata differs
@@ -57,6 +63,15 @@ Command-Line Arguments:
         metadata updates; files are then reconciled by filename and size
         (same key+size kept; changed size or new keys uploaded; removed
         keys deleted). See the import API docs for details.
+
+    --all-or-none
+        Stop the import and roll back any previously created files if any record 
+        fails to import successfully. By default a failing record does not stop 
+        the import job or prevent other records in the job from being imported.
+
+    --suppress-reports
+        Prevent the response JSON from being written to a report file 
+        locally. Defaults to False (so reports *are* written to disk).
 
 Environment Variables:
     KCWORKS_IMPORT_API_KEY
@@ -72,7 +87,8 @@ Environment Variables:
         File paths, comma or space-separated (alternative to --files)
 
     KCWORKS_IMPORT_OUTPUT_PATH
-        Path to save response JSON (alternative to --output)
+        Path to a folder where response JSON will be stored (alternative 
+        to --output)
 
     KCWORKS_IMPORT_API_URL
         Override the import API base URL (e.g. http://127.0.0.1:8000/api/import).
@@ -85,7 +101,7 @@ Usage Examples:
         --collection-id "my-collection" \\
         --metadata "metadata.json" \\
         --files "file1.pdf" "file2.docx" \\
-        --output "response.json"
+        --output "/path/to/folder/"
 
     python -m kcworks_import_client.api_importer --help
 
@@ -104,9 +120,10 @@ import json
 import os
 import sys
 import threading
+from datetime import datetime
 from typing import Any
 
-from .client import ImportClient, guess_mime_type
+from .client import ImportClient, guess_mime_type, resolve_output_file_path
 from .exceptions import ImportRequestError
 from .results import ImportResult
 
@@ -246,41 +263,37 @@ def _get_files_paths(args: argparse.Namespace) -> list[str]:
     return validated_paths
 
 
-def _get_output_path(args: argparse.Namespace) -> str | None:  # noqa: UP007
-    """Get optional path to save the response JSON.
+def _get_output_folder(args: argparse.Namespace, *, default_dir: str) -> str:
+    """Resolve the report output folder for the single-collection CLI.
+
+    Order: ``--output``, ``KCWORKS_IMPORT_OUTPUT_PATH``, interactive prompt
+    (unless ``--skip-output-prompt``), then ``default_dir`` (cwd for single).
 
     Args:
-        args: Parsed command-line arguments.
+        args: Parsed CLI arguments.
+        default_dir: Directory used when the user skips the prompt or when
+            ``--skip-output-prompt`` is set.
 
     Returns:
-        Output file path, or None if not provided.
-
-    Exits:
-        SystemExit: If output directory does not exist.
+        Folder path string (not yet turned into a timestamped report file).
     """
     if args.output:
-        output_path: str | None = str(args.output)  # noqa: UP007
-    else:
-        output_path_env = os.getenv("KCWORKS_IMPORT_OUTPUT_PATH")
-        if output_path_env:
-            output_path = output_path_env
-        else:
-            prompt = (
-                "Enter the path to save the response JSON "
-                "(optional, press Enter to skip): "
-            )
-            output_path = input(prompt).strip()
-            if not output_path:
-                return None
+        return str(args.output)
 
-    if output_path:
-        parent_dir = os.path.dirname(output_path)
-        if parent_dir and not os.path.exists(parent_dir):
-            error_msg = f"Error: Output directory does not exist: {parent_dir}"
-            print(error_msg, file=sys.stderr)
-            sys.exit(1)
+    output_path_env = os.getenv("KCWORKS_IMPORT_OUTPUT_PATH")
+    if output_path_env:
+        return output_path_env
 
-    return output_path
+    if getattr(args, "skip_output_prompt", False):
+        return default_dir
+
+    prompt = (
+        "Enter the folder path where the output JSON "
+        "report file will be saved "
+        f"(press Enter to use {default_dir}): "
+    )
+    output_folder = input(prompt).strip()
+    return output_folder if output_folder else default_dir
 
 
 def _format_response_message(response_json: dict[str, Any], status_code: int) -> str:
@@ -452,7 +465,7 @@ def _cli_spinner_progress() -> tuple[Any, Any]:
 
 
 def _present_import_result(
-    result: ImportResult, output_path: str | None
+    result: ImportResult, output_path: str | None, suppress_reports: bool
 ) -> int:
     """Print a CLI result and optionally write ``output_path``.
 
@@ -465,7 +478,7 @@ def _present_import_result(
 
     if isinstance(result.body, dict):
         print(_format_response_message(result.body, result.status_code))
-        if output_path:
+        if output_path and not suppress_reports:
             with open(output_path, "w", encoding="utf-8") as output_file:
                 json.dump(result.body, output_file, indent=2)
             print(f"\nFull response saved to: {output_path}")
@@ -475,7 +488,7 @@ def _present_import_result(
         f"Request failed with status {result.status_code}",
         result.body if isinstance(result.body, str) else None,
     )
-    if output_path and isinstance(result.body, str):
+    if output_path and isinstance(result.body, str) and not suppress_reports:
         with open(output_path, "w", encoding="utf-8") as output_file:
             output_file.write(result.body)
         print(f"\nResponse saved to: {output_path}")
@@ -493,6 +506,8 @@ def import_works(
     id_scheme: str = "import-recid",
     alternate_id_scheme: str = "",
     no_updates: bool = False,
+    all_or_none: bool = False,
+    suppress_reports: bool = False,
 ) -> int:
     """Import works to the collection (CLI-compatible wrapper).
 
@@ -516,6 +531,10 @@ def import_works(
         no_updates: When True, refuse to change an existing matched record
             if metadata differs (file handling is not reached). Default False
             (metadata updates allowed; files reconciled by filename and size).
+        all_or_none: When True, stop and roll back the entire import job if
+            any record fails to import successfully. Default is False.
+        suppress_reports: When True, do not save import report JSON to
+            file. Default is False.
 
     Returns:
         ``0`` on success (HTTP 201 or 207), ``1`` on failure.
@@ -531,6 +550,7 @@ def import_works(
             id_scheme=id_scheme,
             alternate_id_scheme=alternate_id_scheme,
             no_updates=no_updates,
+            all_or_none=all_or_none,
             progress=progress,
         )
     except ImportRequestError as exc:
@@ -544,18 +564,21 @@ def import_works(
     finally:
         stop_spinner()
 
-    return _present_import_result(result, output_path)
+    return _present_import_result(result, output_path, suppress_reports)
 
 
 def _print_startup_info(
     collection_id: str,
     metadata_path: str,
     files_count: int = 0,
+    output_path: str | None = None,
     testing: bool = False,
     notify_owners: bool = False,
     id_scheme: str = "import-recid",
     alternate_id_scheme: str = "",
     no_updates: bool = False,
+    all_or_none: bool = False,
+    suppress_reports: bool = False,
 ) -> None:
     """Print startup configuration information."""
     lines = []
@@ -572,9 +595,16 @@ def _print_startup_info(
     if alternate_id_scheme:
         lines.append(f"Alternate id scheme: {alternate_id_scheme}")
     lines.append(
-        f"Block metadata updates on existing matches? "
-        f"{'Yes' if no_updates else 'No'}"
+        f"Block metadata updates on existing matches? {'Yes' if no_updates else 'No'}"
     )
+    lines.append(
+        f"Abandon and roll back the whole import job if one record "
+        f"import fails? {'Yes' if all_or_none else 'No'}"
+    )
+    if output_path and not suppress_reports:
+        lines.append(f"Will save import report as a JSON file at {output_path}")
+    elif suppress_reports:
+        lines.append(f"Will not save import report to file (suppressed).")
     lines.append("=" * 70)
     lines.append("")
     print("\n".join(lines))
@@ -613,8 +643,17 @@ def main() -> None:
     parser.add_argument(
         "--output",
         help=(
-            "Optional path to save the response JSON "
-            "(or set KCWORKS_IMPORT_OUTPUT_PATH env var)"
+            "Optional folder for the response JSON report "
+            "(or set KCWORKS_IMPORT_OUTPUT_PATH env var). "
+            "Defaults to the current working directory when skipped."
+        ),
+    )
+    parser.add_argument(
+        "--skip-output-prompt",
+        action="store_true",
+        help=(
+            "Skip the interactive output-folder prompt and use the current "
+            "working directory when --output / env are unset."
         ),
     )
     parser.add_argument(
@@ -659,6 +698,22 @@ def main() -> None:
             "and size (see import API docs)."
         ),
     )
+    parser.add_argument(
+        "--all-or-none",
+        action="store_true",
+        help=(
+            "Stop the import job and roll back any created records if any "
+            "record in the batch fails to import successfully."
+        ),
+    )
+    parser.add_argument(
+        "--suppress-reports",
+        action="store_true",
+        help=(
+            "Prevent the response JSON from being written to a report file "
+            "locally. Defaults to False (so reports *are* written to disk)."
+        ),
+    )
 
     args = parser.parse_args()
 
@@ -666,17 +721,28 @@ def main() -> None:
     collection_id = _get_collection_id(args)
     metadata_path = _get_metadata_path(args)
     files_paths = _get_files_paths(args)
-    output_path = _get_output_path(args)
+    if not args.suppress_reports:
+        try:
+            output_folder = _get_output_folder(args, default_dir=os.getcwd())
+            output_path = resolve_output_file_path(output_folder, collection_id)
+        except ValueError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        output_path = None
 
     _print_startup_info(
         collection_id,
         metadata_path,
         files_count=len(files_paths),
+        output_path=output_path,
         testing=args.testing,
         notify_owners=args.notify_record_owners,
         id_scheme=args.id_scheme,
         alternate_id_scheme=args.alternate_id_scheme,
         no_updates=args.no_updates,
+        all_or_none=args.all_or_none,
+        suppress_reports=args.suppress_reports,
     )
 
     exit_code = import_works(
@@ -690,6 +756,8 @@ def main() -> None:
         id_scheme=args.id_scheme,
         alternate_id_scheme=args.alternate_id_scheme,
         no_updates=args.no_updates,
+        all_or_none=args.all_or_none,
+        suppress_reports=args.suppress_reports,
     )
     sys.exit(exit_code)
 

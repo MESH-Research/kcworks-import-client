@@ -77,6 +77,7 @@ See [Collection hierarchy and subcollection requests](https://mesh-research.gith
 | `--api-key KEY`          | API key (or `KCWORKS_IMPORT_API_KEY`, or interactive prompt).                                                            |
 | `--manifest PATH`        | Path to the JSON/YAML manifest (or `KCWORKS_IMPORT_MANIFEST_PATH`, or interactive prompt).                               |
 | `--assign-parents`       | Create parent/child links for entries that list `parent_slug`.                                                           |
+| `--output PATH`          | Folder for per-collection timestamped result JSON reports. Defaults to the manifest file's directory. Ignored with `--suppress-reports`. |
 | `--testing`              | Use a local testing instance (`https://localhost`).                                                                      |
 | `--notify-record-owners` | Default notify flag for entries that do not set `notify_record_owners`.                                                  |
 | `--id-scheme SCHEME`     | Default import dedupe scheme (default: `import-recid`); overridable per entry.                                           |

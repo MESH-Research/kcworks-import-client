@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 import yaml
-from helpers.mock_apis import start_mock_apis
+from helpers.mock_apis import register_mock_apis
 from helpers.sample_metadata import sample_metadata_journal_article_pdf
 
 from kcworks_import_client import MultiCollectionImporter
@@ -131,10 +131,10 @@ def test_coerce_bool_variants():
 
 
 def test_multi_importer_run_manifest_yaml(
-    import_bundle, sample_files_dir, monkeypatch
+    import_bundle, sample_files_dir, monkeypatch, requests_mock
 ):
     """MultiCollectionImporter.run_manifest works with a YAML manifest."""
-    server, apis = start_mock_apis()
+    apis = register_mock_apis(requests_mock)
     monkeypatch.setenv("KCWORKS_IMPORT_API_URL", apis["import_url"])
     monkeypatch.setenv("KCWORKS_COMMUNITIES_API_URL", apis["communities_url"])
     pdf_name = (import_bundle / "sample.pdf").name
@@ -156,11 +156,8 @@ def test_multi_importer_run_manifest_yaml(
         encoding="utf-8",
     )
     logs: list[str] = []
-    try:
-        importer = MultiCollectionImporter("key", log=logs.append)
-        result = importer.run_manifest(manifest, assign_parents=False)
-    finally:
-        server.shutdown()
+    importer = MultiCollectionImporter("key", log=logs.append)
+    result = importer.run_manifest(manifest, assign_parents=False)
 
     assert result.ok
     assert "dept" in result.communities
@@ -170,9 +167,11 @@ def test_multi_importer_run_manifest_yaml(
     assert any("Ensuring collections" in line for line in logs)
 
 
-def test_multi_importer_assign_parents_and_skip_existing(monkeypatch, import_bundle):
+def test_multi_importer_assign_parents_and_skip_existing(
+    monkeypatch, import_bundle, requests_mock
+):
     """run_manifest creates parent links and skips already-linked children."""
-    server, apis = start_mock_apis()
+    apis = register_mock_apis(requests_mock)
     monkeypatch.setenv("KCWORKS_IMPORT_API_URL", apis["import_url"])
     monkeypatch.setenv("KCWORKS_COMMUNITIES_API_URL", apis["communities_url"])
     pdf_name = "sample.pdf"
@@ -215,19 +214,18 @@ def test_multi_importer_assign_parents_and_skip_existing(monkeypatch, import_bun
         }),
         encoding="utf-8",
     )
-    try:
-        importer = MultiCollectionImporter("key")
-        result = importer.run_manifest(manifest, assign_parents=True)
-    finally:
-        server.shutdown()
+    importer = MultiCollectionImporter("key")
+    result = importer.run_manifest(manifest, assign_parents=True)
 
     assert result.ok
     assert apis["state"]["join_requests"] == []  # already linked → skip
 
 
-def test_multi_importer_skips_entries_without_files(monkeypatch, tmp_path):
+def test_multi_importer_skips_entries_without_files(
+    monkeypatch, tmp_path, requests_mock
+):
     """Entries with neither metadata nor files are skipped."""
-    server, apis = start_mock_apis()
+    apis = register_mock_apis(requests_mock)
     monkeypatch.setenv("KCWORKS_IMPORT_API_URL", apis["import_url"])
     monkeypatch.setenv("KCWORKS_COMMUNITIES_API_URL", apis["communities_url"])
     manifest = tmp_path / "m.json"
@@ -237,18 +235,17 @@ def test_multi_importer_skips_entries_without_files(monkeypatch, tmp_path):
         }),
         encoding="utf-8",
     )
-    try:
-        result = MultiCollectionImporter("key").run_manifest(manifest)
-    finally:
-        server.shutdown()
+    result = MultiCollectionImporter("key").run_manifest(manifest)
     assert result.ok
     assert result.skipped == ["empty"]
     assert result.imports == {}
 
 
-def test_multi_importer_missing_parent_raises(monkeypatch, import_bundle):
+def test_multi_importer_missing_parent_raises(
+    monkeypatch, import_bundle, requests_mock
+):
     """Missing parent_slug target raises ManifestError."""
-    server, apis = start_mock_apis()
+    apis = register_mock_apis(requests_mock)
     monkeypatch.setenv("KCWORKS_IMPORT_API_URL", apis["import_url"])
     monkeypatch.setenv("KCWORKS_COMMUNITIES_API_URL", apis["communities_url"])
     manifest = import_bundle / "m.json"
@@ -266,42 +263,31 @@ def test_multi_importer_missing_parent_raises(monkeypatch, import_bundle):
         }),
         encoding="utf-8",
     )
-    try:
-        with pytest.raises(ManifestError, match="Parent collection"):
-            MultiCollectionImporter("key").run_manifest(
-                manifest, assign_parents=True
-            )
-    finally:
-        server.shutdown()
+    with pytest.raises(ManifestError, match="Parent collection"):
+        MultiCollectionImporter("key").run_manifest(manifest, assign_parents=True)
 
 
-def test_community_create_failure_raises(monkeypatch):
+def test_community_create_failure_raises(monkeypatch, requests_mock):
     """create_community raises CommunityError on non-2xx."""
-    server, apis = start_mock_apis(
-        extra_state={"post_community_status": 500}
+    apis = register_mock_apis(
+        requests_mock, extra_state={"post_community_status": 500}
     )
     monkeypatch.setenv("KCWORKS_COMMUNITIES_API_URL", apis["communities_url"])
-    try:
-        with pytest.raises(CommunityError, match="Failed to create"):
-            MultiCollectionImporter("key").create_community("x", "X")
-    finally:
-        server.shutdown()
+    with pytest.raises(CommunityError, match="Failed to create"):
+        MultiCollectionImporter("key").create_community("x", "X")
 
 
-def test_get_community_unexpected_status(monkeypatch):
+def test_get_community_unexpected_status(monkeypatch, requests_mock):
     """get_community raises CommunityError on unexpected HTTP status."""
-    server, apis = start_mock_apis(extra_state={"get_status": 503})
+    apis = register_mock_apis(requests_mock, extra_state={"get_status": 503})
     monkeypatch.setenv("KCWORKS_COMMUNITIES_API_URL", apis["communities_url"])
-    try:
-        with pytest.raises(CommunityError, match="Failed to fetch"):
-            MultiCollectionImporter("key").get_community("anything")
-    finally:
-        server.shutdown()
+    with pytest.raises(CommunityError, match="Failed to fetch"):
+        MultiCollectionImporter("key").get_community("anything")
 
 
-def test_assign_parent_conflicting_parent(monkeypatch):
+def test_assign_parent_conflicting_parent(monkeypatch, requests_mock):
     """assign_parent raises when child already has a different parent."""
-    server, apis = start_mock_apis()
+    apis = register_mock_apis(requests_mock)
     monkeypatch.setenv("KCWORKS_COMMUNITIES_API_URL", apis["communities_url"])
     parent = {
         "id": "uuid-p",
@@ -317,16 +303,13 @@ def test_assign_parent_conflicting_parent(monkeypatch):
         "access": {},
         "parent": {"id": "uuid-other", "slug": "other"},
     }
-    try:
-        with pytest.raises(CommunityError, match="different parent"):
-            MultiCollectionImporter("key").assign_parent(child, parent)
-    finally:
-        server.shutdown()
+    with pytest.raises(CommunityError, match="different parent"):
+        MultiCollectionImporter("key").assign_parent(child, parent)
 
 
-def test_enable_children_put_failure(monkeypatch):
+def test_enable_children_put_failure(monkeypatch, requests_mock):
     """enable_children raises CommunityError when PUT fails."""
-    server, apis = start_mock_apis(extra_state={"put_status": 400})
+    apis = register_mock_apis(requests_mock, extra_state={"put_status": 400})
     monkeypatch.setenv("KCWORKS_COMMUNITIES_API_URL", apis["communities_url"])
     community = {
         "id": "uuid-p",
@@ -337,11 +320,8 @@ def test_enable_children_put_failure(monkeypatch):
         "revision_id": 1,
     }
     apis["state"]["communities"]["p"] = community
-    try:
-        with pytest.raises(CommunityError, match="enable children"):
-            MultiCollectionImporter("key").enable_children(community)
-    finally:
-        server.shutdown()
+    with pytest.raises(CommunityError, match="enable children"):
+        MultiCollectionImporter("key").enable_children(community)
 
 
 def test_normalize_files_validation(tmp_path):
@@ -370,3 +350,50 @@ def test_entry_override_helpers():
         == "import-recid"
     )
     assert MultiCollectionImporter.entry_no_updates(entry, True) is False
+    assert MultiCollectionImporter.entry_all_or_none({}, False) is False
+    assert MultiCollectionImporter.entry_all_or_none({"all_or_none": True}, False) is (
+        True
+    )
+    assert MultiCollectionImporter.entry_suppress_reports({}, True) is True
+    assert MultiCollectionImporter.entry_suppress_reports(
+        {"suppress_reports": "false"}, True
+    ) is False
+
+
+def test_multi_importer_forwards_all_or_none_and_suppresses_reports(
+    monkeypatch, import_bundle, requests_mock
+):
+    """Library run_manifest forwards all_or_none and honors suppress_reports."""
+    apis = register_mock_apis(requests_mock)
+    monkeypatch.setenv("KCWORKS_IMPORT_API_URL", apis["import_url"])
+    monkeypatch.setenv("KCWORKS_COMMUNITIES_API_URL", apis["communities_url"])
+    pdf_name = (import_bundle / "sample.pdf").name
+    out_file = import_bundle / "should-not-write.json"
+    manifest = import_bundle / "manifest.json"
+    manifest.write_text(
+        json.dumps({
+            "collections": [
+                {
+                    "slug": "dept",
+                    "name": "Department",
+                    "metadata": "metadata.json",
+                    "files": pdf_name,
+                    "output": "should-not-write.json",
+                    "all_or_none": True,
+                }
+            ]
+        }),
+        encoding="utf-8",
+    )
+
+    result = MultiCollectionImporter("key").run_manifest(
+        manifest,
+        all_or_none=False,  # entry override should win
+        suppress_reports=True,
+    )
+
+    assert result.ok
+    assert not out_file.exists()
+    body = apis["state"]["imports"][0]["body"]
+    assert b'name="all_or_none"' in body
+    assert b"true" in body

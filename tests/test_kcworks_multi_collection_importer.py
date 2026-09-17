@@ -6,9 +6,8 @@
 
 """End-to-end tests for the multi-collection importer client script.
 
-These tests run the script as a subprocess (and load helpers as a module)
-to verify argument parsing, manifest handling, and orchestration against
-a mock communities + import HTTP server.
+Help/validation tests run as a subprocess. Full orchestration tests run
+the CLI in-process with requests-mock.
 """
 
 from __future__ import annotations
@@ -19,12 +18,11 @@ import json
 import os
 import subprocess
 import sys
-import threading
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from types import SimpleNamespace
 
 import pytest
+from helpers.mock_apis import register_mock_apis
 from helpers.sample_metadata import sample_metadata_journal_article_pdf
 
 
@@ -237,185 +235,39 @@ def test_get_manifest_path_uses_env(monkeypatch, tmp_path):
     assert module._get_manifest_path(args) == str(manifest)
 
 
-def _make_combined_handler(state: dict):
-    """Build a handler for communities + import endpoints.
-
-    Args:
-        state: Mutable dict tracking created communities and import posts.
-            Keys: ``communities`` (slug → community dict), ``imports`` (list).
+def _run_cli(monkeypatch, capsys, args, *, env=None) -> SimpleNamespace:
+    """Run ``multi_collection_importer.cli`` in-process.
 
     Returns:
-        A BaseHTTPRequestHandler subclass for use with HTTPServer.
+        Namespace with ``returncode``, ``stdout``, and ``stderr``.
     """
-
-    class Handler(BaseHTTPRequestHandler):
-        def _read_json(self):
-            length = int(self.headers.get("Content-Length", 0))
-            raw = self.rfile.read(length) if length else b"{}"
-            if not raw:
-                return {}
-            return json.loads(raw.decode("utf-8"))
-
-        def _send(self, status: int, payload: dict | list | str):
-            if isinstance(payload, (dict, list)):
-                body = json.dumps(payload).encode("utf-8")
-                content_type = "application/json"
-            else:
-                body = str(payload).encode("utf-8")
-                content_type = "text/plain"
-            self.send_response(status)
-            self.send_header("Content-Type", content_type)
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-
-        def do_GET(self):
-            path = urlparse(self.path).path
-            # /api/communities/<slug_or_id>
-            prefix = "/api/communities/"
-            if path.startswith(prefix) and "/actions/" not in path:
-                key = path[len(prefix) :].rstrip("/")
-                for community in state["communities"].values():
-                    if community["slug"] == key or community["id"] == key:
-                        self._send(200, community)
-                        return
-                self._send(404, {"message": "Not found"})
-                return
-            self._send(404, {"message": "Not found"})
-
-        def do_POST(self):
-            path = urlparse(self.path).path
-            if path.rstrip("/") == "/api/communities":
-                data = self._read_json()
-                slug = data.get("slug", "unnamed")
-                community = {
-                    "id": f"uuid-{slug}",
-                    "slug": slug,
-                    "metadata": data.get("metadata", {"title": slug}),
-                    "access": data.get("access", {}),
-                    "children": {"allow": False},
-                    "revision_id": 1,
-                }
-                state["communities"][slug] = community
-                self._send(201, community)
-                return
-
-            if path.endswith("/actions/join-request"):
-                data = self._read_json()
-                child_id = data.get("community_id")
-                parent_id = path.split("/")[-3]
-                child = next(
-                    (
-                        c
-                        for c in state["communities"].values()
-                        if c["id"] == child_id
-                    ),
-                    None,
-                )
-                parent = next(
-                    (
-                        c
-                        for c in state["communities"].values()
-                        if c["id"] == parent_id
-                    ),
-                    None,
-                )
-                if child and parent:
-                    child["parent"] = {
-                        "id": parent["id"],
-                        "slug": parent["slug"],
-                    }
-                state["join_requests"].append(data)
-                self._send(
-                    201,
-                    {
-                        "id": "req-1",
-                        "status": "accepted",
-                        "type": "subcommunity",
-                    },
-                )
-                return
-
-            if path.startswith("/api/import/"):
-                # Drain multipart body without parsing
-                length = int(self.headers.get("Content-Length", 0))
-                if length:
-                    self.rfile.read(length)
-                slug = path[len("/api/import/") :].rstrip("/")
-                state["imports"].append(slug)
-                self._send(
-                    201,
-                    {
-                        "data": [
-                            {
-                                "item_index": 0,
-                                "record_id": f"rec-{slug}",
-                                "record_url": f"https://example.com/{slug}",
-                            }
-                        ],
-                        "message": "Import completed.",
-                    },
-                )
-                return
-
-            self._send(404, {"message": "Not found"})
-
-        def do_PUT(self):
-            path = urlparse(self.path).path
-            prefix = "/api/communities/"
-            if path.startswith(prefix):
-                key = path[len(prefix) :].rstrip("/")
-                data = self._read_json()
-                for community in state["communities"].values():
-                    if community["id"] == key or community["slug"] == key:
-                        if "children" in data:
-                            community["children"] = data["children"]
-                        community["revision_id"] = (
-                            community.get("revision_id", 1) + 1
-                        )
-                        self._send(200, community)
-                        return
-                self._send(404, {"message": "Not found"})
-                return
-            self._send(404, {"message": "Not found"})
-
-        def log_message(self, format, *args):
-            pass
-
-    return Handler
-
-
-@pytest.fixture
-def mock_kcworks_apis():
-    """Start a mock server exposing communities + import APIs.
-
-    Yields:
-        dict with ``communities_url``, ``import_url``, and mutable ``state``.
-    """
-    state = {"communities": {}, "imports": [], "join_requests": []}
-    handler = _make_combined_handler(state)
-    server = HTTPServer(("127.0.0.1", 0), handler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    try:
-        port = server.server_address[1]
-        yield {
-            "communities_url": f"http://127.0.0.1:{port}/api/communities",
-            "import_url": f"http://127.0.0.1:{port}/api/import",
-            "state": state,
-        }
-    finally:
-        server.shutdown()
+    module = _load_multi_module()
+    for key, value in (env or {}).items():
+        monkeypatch.setenv(key, value)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["kcworks-multi-collection-importer", *list(args)],
+    )
+    with pytest.raises(SystemExit) as exc:
+        module.cli()
+    code = exc.value.code
+    if code is None:
+        code = 0
+    captured = capsys.readouterr()
+    return SimpleNamespace(returncode=code, stdout=captured.out, stderr=captured.err)
 
 
 def test_full_run_creates_collections_assigns_parents_and_imports(
-    mock_kcworks_apis,
+    monkeypatch,
+    capsys,
+    requests_mock,
     import_bundle,
     sample_pdf,
 ):
     """End-to-end: create collections, link parent, import records."""
+    apis = register_mock_apis(requests_mock)
     pdf_name = sample_pdf.name
-    # Ensure file is in import_bundle (fixture copies it)
     assert (import_bundle / pdf_name).exists() or list(import_bundle.glob("*.pdf"))
 
     file_name = list(import_bundle.glob("*.pdf"))[0].name
@@ -426,7 +278,6 @@ def test_full_run_creates_collections_assigns_parents_and_imports(
                 "name": "Parent Collection",
                 "metadata": "metadata.json",
                 "files": file_name,
-                "output": "parent-out.json",
             },
             {
                 "slug": "child-coll",
@@ -434,29 +285,32 @@ def test_full_run_creates_collections_assigns_parents_and_imports(
                 "parent_slug": "parent-coll",
                 "metadata": "metadata.json",
                 "files": file_name,
-                "output": "child-out.json",
             },
         ]
     }
     manifest_path = import_bundle / "manifest.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
-    result = _run_script(
+    result = _run_cli(
+        monkeypatch,
+        capsys,
         [
             "--api-key",
             "test-key",
             "--manifest",
             str(manifest_path),
             "--assign-parents",
+            "--output",
+            str(import_bundle),
         ],
         env={
-            "KCWORKS_COMMUNITIES_API_URL": mock_kcworks_apis["communities_url"],
-            "KCWORKS_IMPORT_API_URL": mock_kcworks_apis["import_url"],
+            "KCWORKS_COMMUNITIES_API_URL": apis["communities_url"],
+            "KCWORKS_IMPORT_API_URL": apis["import_url"],
         },
     )
 
     assert result.returncode == 0, result.stderr + "\n" + result.stdout
-    state = mock_kcworks_apis["state"]
+    state = apis["state"]
     assert "parent-coll" in state["communities"]
     assert "child-coll" in state["communities"]
     assert state["communities"]["parent-coll"]["children"]["allow"] is True
@@ -464,20 +318,25 @@ def test_full_run_creates_collections_assigns_parents_and_imports(
         "parent-coll"
     )
     assert state["join_requests"]
-    assert set(state["imports"]) == {"parent-coll", "child-coll"}
-    assert (import_bundle / "parent-out.json").exists()
-    assert (import_bundle / "child-out.json").exists()
+    assert {item["slug"] for item in state["imports"]} == {
+        "parent-coll",
+        "child-coll",
+    }
+    assert list(import_bundle.glob("kcworks_import_parent-coll_*.json"))
+    assert list(import_bundle.glob("kcworks_import_child-coll_*.json"))
     assert "Multi-collection import finished successfully" in result.stdout
 
 
 def test_full_run_skips_existing_collection_and_parent_link(
-    mock_kcworks_apis,
+    monkeypatch,
+    capsys,
+    requests_mock,
     import_bundle,
 ):
     """Re-run is idempotent for existing collections and parent links."""
+    apis = register_mock_apis(requests_mock)
     file_name = list(import_bundle.glob("*.pdf"))[0].name
-    # Pre-seed communities as already linked
-    mock_kcworks_apis["state"]["communities"]["parent-coll"] = {
+    apis["state"]["communities"]["parent-coll"] = {
         "id": "uuid-parent-coll",
         "slug": "parent-coll",
         "metadata": {"title": "Parent Collection"},
@@ -485,7 +344,7 @@ def test_full_run_skips_existing_collection_and_parent_link(
         "children": {"allow": True},
         "revision_id": 2,
     }
-    mock_kcworks_apis["state"]["communities"]["child-coll"] = {
+    apis["state"]["communities"]["child-coll"] = {
         "id": "uuid-child-coll",
         "slug": "child-coll",
         "metadata": {"title": "Child Collection"},
@@ -515,24 +374,27 @@ def test_full_run_skips_existing_collection_and_parent_link(
     manifest_path = import_bundle / "manifest.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
-    result = _run_script(
+    result = _run_cli(
+        monkeypatch,
+        capsys,
         [
             "--api-key",
             "test-key",
             "--manifest",
             str(manifest_path),
             "--assign-parents",
+            "--suppress-reports",
         ],
         env={
-            "KCWORKS_COMMUNITIES_API_URL": mock_kcworks_apis["communities_url"],
-            "KCWORKS_IMPORT_API_URL": mock_kcworks_apis["import_url"],
+            "KCWORKS_COMMUNITIES_API_URL": apis["communities_url"],
+            "KCWORKS_IMPORT_API_URL": apis["import_url"],
         },
     )
 
     assert result.returncode == 0, result.stderr + "\n" + result.stdout
     assert "already exists" in result.stdout
     assert "already linked" in result.stdout
-    assert mock_kcworks_apis["state"]["join_requests"] == []
+    assert apis["state"]["join_requests"] == []
 
 
 def test_entry_notify_and_id_scheme_overrides():

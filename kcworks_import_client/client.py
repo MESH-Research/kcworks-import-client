@@ -6,6 +6,7 @@ import json
 import mimetypes
 import os
 from collections.abc import Callable, Mapping, Sequence
+from datetime import datetime
 from pathlib import Path
 from typing import Any, BinaryIO
 
@@ -80,6 +81,43 @@ def serialize_metadata(metadata: MetadataInput) -> str:
     raise TypeError(
         "metadata must be a path, JSON string, list of dicts, or a single dict"
     )
+
+
+def resolve_output_file_path(output_dir: str, collection_id: str) -> str:
+    """Build a timestamped import-report file path under ``output_dir``.
+
+    This helper does not prompt or read environment variables; callers
+    (typically CLI wrappers) must supply the directory.
+
+    Args:
+        output_dir: Existing directory for the report, or an existing file
+            path whose parent directory will be used.
+        collection_id: Collection id/slug embedded in the filename.
+
+    Returns:
+        Absolute path to a new ``kcworks_import_{id}_{timestamp}.json`` file.
+
+    Raises:
+        ValueError: If ``output_dir`` is empty or does not resolve to an
+            existing directory.
+    """
+    if not output_dir:
+        raise ValueError("output_dir is required")
+
+    now_string = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    cid = collection_id
+    if len(cid) > 20:
+        cid = cid[:20] + "..." + cid[-10:]
+    file_name = f"kcworks_import_{cid}_{now_string}.json"
+
+    if os.path.isfile(output_dir):
+        resolved_dir = os.path.dirname(os.path.abspath(output_dir))
+    elif os.path.isdir(output_dir):
+        resolved_dir = os.path.abspath(output_dir)
+    else:
+        raise ValueError(f"Report output directory does not exist: {output_dir}")
+
+    return os.path.join(resolved_dir, file_name)
 
 
 class ImportClient:
@@ -164,6 +202,7 @@ class ImportClient:
         id_scheme: str = "import-recid",
         alternate_id_scheme: str = "",
         no_updates: bool = False,
+        all_or_none: bool = False,
         progress: ProgressCallback | None = None,
     ) -> ImportResult:
         """Import works into a collection.
@@ -177,7 +216,11 @@ class ImportClient:
             notify_owners: Email users listed as record owners.
             id_scheme: Primary import dedupe scheme.
             alternate_id_scheme: Optional secondary dedupe scheme.
-            no_updates: Block metadata updates on existing matches.
+            no_updates: If True, block metadata updates on existing matches.
+                Default is False.
+            all_or_none: If True, stop the whole update job and roll back any
+                created records if one of the record imports fails. Defaults
+                to False.
             progress: Optional callback invoked with status strings (e.g.
                 ``"start"``, ``"done"``). The CLI uses this for a spinner.
 
@@ -212,6 +255,7 @@ class ImportClient:
                 "notify_record_owners": str(notify_owners).lower(),
                 "id_scheme": id_scheme or "import-recid",
                 "no_updates": str(no_updates).lower(),
+                "all_or_none": str(all_or_none).lower(),
             }
             if alternate_id_scheme:
                 form_data["alternate_id_scheme"] = alternate_id_scheme
