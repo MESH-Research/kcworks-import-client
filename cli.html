@@ -296,21 +296,24 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <td><p>One or more file paths to upload with the records. Multiple files can be specified by providing multiple arguments. If not provided, checks <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_FILES_PATH</span></code> environment variable (comma or space-separated), or prompts interactively.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--output</span> <span class="pre">PATH</span></code></p></td>
-<td><p>Optional path to save the API response as JSON. If not provided, checks <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_OUTPUT_PATH</span></code> environment variable, or prompts interactively (can be skipped by pressing Enter).</p></td>
+<td><p>Optional folder for the timestamped response JSON report. If not provided, checks <code class="docutils literal notranslate"><span class="pre">KCWORKS_IMPORT_OUTPUT_PATH</span></code>, or prompts interactively (Enter → current working directory). Ignored with <code class="docutils literal notranslate"><span class="pre">--suppress-reports</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--testing</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--skip-output-prompt</span></code></p></td>
+<td><p>Skip the output-folder prompt and use the current working directory when <code class="docutils literal notranslate"><span class="pre">--output</span></code> / env are unset.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--testing</span></code></p></td>
 <td><p>Use a local testing instance (<code class="docutils literal notranslate"><span class="pre">https://localhost</span></code>).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--notify-record-owners</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--notify-record-owners</span></code></p></td>
 <td><p>Send email notifications to users listed as record owners in metadata. Default: off.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--id-scheme</span> <span class="pre">SCHEME</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--id-scheme</span> <span class="pre">SCHEME</span></code></p></td>
 <td><p>Identifier scheme for import deduplication (default: <code class="docutils literal notranslate"><span class="pre">import-recid</span></code>). Must be defined in KCWorks or pre-arranged for addition.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--alternate-id-scheme</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--alternate-id-scheme</span></code></p></td>
 <td><p>Optional secondary identifier scheme for deduplication. Same constraint as <code class="docutils literal notranslate"><span class="pre">--id-scheme</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--no-updates</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--no-updates</span></code></p></td>
 <td><p>Refuse to change an existing matched record when <strong>metadata</strong> differs (skips file reconciliation in that case). Default: allow metadata updates; files then follow the key/size rules under <a class="reference internal" href="import_api.html#import-existing-record-files"><span class="std std-ref">Files when re-importing an existing work (no_updates is &quot;false&quot;)</span></a>.</p></td>
 </tr>
 </tbody>

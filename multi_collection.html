@@ -325,19 +325,22 @@
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--assign-parents</span></code></p></td>
 <td><p>Create parent/child links for entries that list <code class="docutils literal notranslate"><span class="pre">parent_slug</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--testing</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--output</span> <span class="pre">PATH</span></code></p></td>
+<td><p>Folder for per-collection timestamped result JSON reports. Defaults to the manifest file’s directory. Ignored with <code class="docutils literal notranslate"><span class="pre">--suppress-reports</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--testing</span></code></p></td>
 <td><p>Use a local testing instance (<code class="docutils literal notranslate"><span class="pre">https://localhost</span></code>).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--notify-record-owners</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--notify-record-owners</span></code></p></td>
 <td><p>Default notify flag for entries that do not set <code class="docutils literal notranslate"><span class="pre">notify_record_owners</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--id-scheme</span> <span class="pre">SCHEME</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--id-scheme</span> <span class="pre">SCHEME</span></code></p></td>
 <td><p>Default import dedupe scheme (default: <code class="docutils literal notranslate"><span class="pre">import-recid</span></code>); overridable per entry.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--alternate-id-scheme</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--alternate-id-scheme</span></code></p></td>
 <td><p>Default secondary dedupe scheme; overridable per entry.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--no-updates</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--no-updates</span></code></p></td>
 <td><p>Default block on metadata updates for existing matches; overridable per entry. Default: allow updates (see <a class="reference internal" href="import_api.html#import-existing-record-files"><span class="std std-ref">Files when re-importing an existing work (no_updates is &quot;false&quot;)</span></a> for files).</p></td>
 </tr>
 </tbody>
