@@ -151,6 +151,14 @@ def _get_api_key(args: argparse.Namespace) -> str:
         assert isinstance(api_key, str)
         return api_key
 
+    if not sys.stdin.isatty():
+        print(
+            "Error: API key is required. Pass --api-key or set "
+            "KCWORKS_IMPORT_API_KEY (cannot prompt: stdin is not a terminal).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     api_key = input("Enter your KCWorks API key: ").strip()
     if not api_key:
         print("Error: API key is required.", file=sys.stderr)
@@ -266,13 +274,13 @@ def _get_files_paths(args: argparse.Namespace) -> list[str]:
 def _get_output_folder(args: argparse.Namespace, *, default_dir: str) -> str:
     """Resolve the report output folder for the single-collection CLI.
 
-    Order: ``--output``, ``KCWORKS_IMPORT_OUTPUT_PATH``, interactive prompt
-    (unless ``--skip-output-prompt``), then ``default_dir`` (cwd for single).
+    Order: `--output`, `KCWORKS_IMPORT_OUTPUT_PATH`, interactive prompt
+    (unless `--skip-output-prompt`), then `default_dir` (cwd for single).
 
     Args:
         args: Parsed CLI arguments.
         default_dir: Directory used when the user skips the prompt or when
-            ``--skip-output-prompt`` is set.
+            `--skip-output-prompt` is set.
 
     Returns:
         Folder path string (not yet turned into a timestamped report file).
@@ -427,7 +435,7 @@ def _cli_spinner_progress() -> tuple[Any, Any]:
     """Start a CLI spinner.
 
     Returns:
-        ``(progress_callback, stop_fn)`` for driving and clearing the spinner.
+        `(progress_callback, stop_fn)` for driving and clearing the spinner.
     """
     stop_spinner = threading.Event()
 
@@ -467,10 +475,10 @@ def _cli_spinner_progress() -> tuple[Any, Any]:
 def _present_import_result(
     result: ImportResult, output_path: str | None, suppress_reports: bool
 ) -> int:
-    """Print a CLI result and optionally write ``output_path``.
+    """Print a CLI result and optionally write `output_path`.
 
     Returns:
-        Exit code ``0`` or ``1``.
+        Exit code `0` or `1`.
     """
     print("=" * 70)
     print("Import Result")
@@ -525,7 +533,7 @@ def import_works(
         notify_owners: Optional flag to enable email notification of
             users identified as record owners.
         id_scheme: Identifier scheme for import deduplication (default
-            ``import-recid``). Must be a scheme already defined in KCWorks,
+            `import-recid`). Must be a scheme already defined in KCWorks,
             or pre-arranged for addition.
         alternate_id_scheme: Optional secondary dedupe scheme.
         no_updates: When True, refuse to change an existing matched record
@@ -537,7 +545,7 @@ def import_works(
             file. Default is False.
 
     Returns:
-        ``0`` on success (HTTP 201 or 207), ``1`` on failure.
+        `0` on success (HTTP 201 or 207), `1` on failure.
     """
     client = ImportClient(api_key, testing=testing)
     progress, stop_spinner = _cli_spinner_progress()
