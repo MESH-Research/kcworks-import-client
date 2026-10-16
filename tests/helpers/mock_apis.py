@@ -243,7 +243,9 @@ def register_import_endpoint(
         The ``import_url`` base (for env wiring).
     """
     if collection_id is None:
-        url: str | re.Pattern[str] = re.compile(rf"{re.escape(import_url.rstrip('/'))}/.+")
+        url: str | re.Pattern[str] = re.compile(
+            rf"{re.escape(import_url.rstrip('/'))}/.+"
+        )
     else:
         url = f"{import_url.rstrip('/')}/{collection_id}"
 

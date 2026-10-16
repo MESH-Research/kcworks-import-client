@@ -27,6 +27,8 @@ def sample_files_dir() -> Path:
 def test_get_api_key_from_prompt(monkeypatch):
     """Interactive prompt supplies API key when CLI/env are empty."""
     monkeypatch.delenv("KCWORKS_IMPORT_API_KEY", raising=False)
+    # Production code refuses to prompt when stdin is not a TTY (pytest).
+    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
     monkeypatch.setattr("builtins.input", lambda _prompt="": "prompted-key")
     args = argparse.Namespace(api_key=None)
     assert api_importer._get_api_key(args) == "prompted-key"
