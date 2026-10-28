@@ -525,6 +525,8 @@ class MultiCollectionImporter:
             if not isinstance(path, str):
                 raise ManifestError(f"Invalid file path in entry {slug!r}: {path!r}")
             abs_path = MultiCollectionImporter.resolve_path(path, manifest_dir)
+            if abs_path is None:
+                raise ManifestError(f"Invalid file path in entry {slug!r}: {path!r}")
             if not os.path.isfile(abs_path):
                 raise ManifestError(f"File not found for {slug!r}: {abs_path}")
             resolved.append(abs_path)
@@ -789,7 +791,7 @@ class MultiCollectionImporter:
                 )
 
             metadata_path = self.resolve_path(str(metadata), manifest_dir)
-            if not os.path.isfile(metadata_path):
+            if metadata_path is None or not os.path.isfile(metadata_path):
                 raise ManifestError(
                     f"Metadata file not found for {entry['slug']!r}: {metadata_path}"
                 )
@@ -798,7 +800,12 @@ class MultiCollectionImporter:
             entry_suppress = self.entry_suppress_reports(entry, suppress_reports)
             output_path = entry.get("output")
             if output_path and not entry_suppress:
-                output_path = self.resolve_path(str(output_path), manifest_dir)
+                resolved_output = self.resolve_path(str(output_path), manifest_dir)
+                if resolved_output is None:
+                    raise ManifestError(
+                        f"Invalid output path for {entry['slug']!r}: {output_path!r}"
+                    )
+                output_path = resolved_output
                 out_dir = os.path.dirname(output_path)
                 if out_dir and not os.path.isdir(out_dir):
                     raise ManifestError(f"Output directory does not exist: {out_dir}")

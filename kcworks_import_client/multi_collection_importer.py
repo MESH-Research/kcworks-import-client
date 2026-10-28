@@ -126,7 +126,10 @@ def _entry_suppress_reports(entry: dict[str, Any], default: bool) -> bool:
 
 
 def _resolve_meta_path(path_value: str, manifest_dir: Path) -> str:
-    return MultiCollectionImporter.resolve_path(path_value, manifest_dir)
+    resolved = MultiCollectionImporter.resolve_path(path_value, manifest_dir)
+    if resolved is None:
+        raise ManifestError(f"Invalid metadata path: {path_value!r}")
+    return resolved
 
 
 def _resolve_output_path(
