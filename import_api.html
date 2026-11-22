@@ -467,8 +467,8 @@ uploads, and response formatting automatically. See
 </div>
 <p>To use a different scheme for deduplication, set the request form field <code class="docutils literal notranslate"><span class="pre">id_scheme</span></code> (and optionally <code class="docutils literal notranslate"><span class="pre">alternate_id_scheme</span></code>) to that scheme name, and use the same scheme in each work’s <code class="docutils literal notranslate"><span class="pre">metadata.identifiers</span></code>. The scheme must already be defined in KCWorks (<code class="docutils literal notranslate"><span class="pre">RDM_RECORDS_IDENTIFIERS_SCHEMES</span></code>), or arranged with the KCWorks team for addition before import. Built-in import-oriented schemes include <code class="docutils literal notranslate"><span class="pre">import-recid</span></code> and <code class="docutils literal notranslate"><span class="pre">neh-recid</span></code>. DOI values in <code class="docutils literal notranslate"><span class="pre">pids.doi</span></code> are also used for matching when present.</p>
 </section>
-<section id="files-when-re-importing-an-existing-work-no-updates-is-false">
-<span id="import-existing-record-files"></span><h3>Files when re-importing an existing work (<code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code>)<a class="headerlink" href="#files-when-re-importing-an-existing-work-no-updates-is-false" title="Link to this heading">¶</a></h3>
+<section id="import-existing-record-files">
+<span id="files-when-re-importing-an-existing-work-no-updates-is-false"></span><h3>Files when re-importing an existing work (<code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code>)<a class="headerlink" href="#import-existing-record-files" title="Link to this heading">¶</a></h3>
 <p>When an import matches an existing draft or published work and <code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code> (the default), or when <code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;true&quot;</span></code> but metadata is unchanged so the load continues, KCWorks reconciles files against the existing record as follows:</p>
 <ul class="simple">
 <li><p>Same filename (key) and same size → leave the existing file; no re-upload.</p></li>
@@ -589,11 +589,11 @@ uploads, and response formatting automatically. See
 <p>This response will include a JSON object with the following fields:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code>: The status of the import request, which will be “success” if the import request was successful.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code>: An array of JSON objects, one for each record that was created in the operation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">errors</span></code>: An array of JSON objects, one for each record that failed to be created. (In a successful import, this array will be empty.)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">message</span></code>: A message describing the import request. (In a successful import, this will be “All records were successfully imported”.)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">errors</span></code>: An array of JSON objects, one for each record that failed to be created. (In a successful import, this array will be empty.)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">imported_records</span></code>: An array of JSON objects, one for each record that was successfully imported (created or updated) in the operation.</p></li>
 </ul>
-<p>Each object in the <code class="docutils literal notranslate"><span class="pre">data</span></code> array will have the following fields:</p>
+<p>Each object in the <code class="docutils literal notranslate"><span class="pre">imported_records</span></code> array will have the following fields:</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -641,7 +641,9 @@ uploads, and response formatting automatically. See
 <p>The response object will be shaped like this:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"success"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"All records were successfully imported."</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"imported_records"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
@@ -670,9 +672,7 @@ uploads, and response formatting automatically. See
 <span class="w">        </span><span class="cm">/* ... */</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">  </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"All records were successfully imported."</span>
+<span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -706,7 +706,7 @@ c. the <code class="docutils literal notranslate"><span class="pre">all_or_none<
 <p>The response will include a JSON object with the same shape as the successful response, but with the following differences:</p>
 <ul class="simple">
 <li><p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> field will be “error”.</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">data</span></code> field will be an empty array.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">imported_records</span></code> field will be an empty array.</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">errors</span></code> field will be an array of objects, each of which describes a work that failed to be created. In each object the <code class="docutils literal notranslate"><span class="pre">record_id</span></code> and <code class="docutils literal notranslate"><span class="pre">record_url</span></code> fields will be <code class="docutils literal notranslate"><span class="pre">null</span></code>, since the work was not created. The <code class="docutils literal notranslate"><span class="pre">errors</span></code> field will be an array of objects, each of which describes an error that occurred during the attempt to create the work. The <code class="docutils literal notranslate"><span class="pre">metadata</span></code> field will still contain the metadata that was provided in the request for reference.</p></li>
 </ul>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -716,7 +716,6 @@ c. the <code class="docutils literal notranslate"><span class="pre">all_or_none<
 <span class="w">        </span><span class="s2">"in the 'errors' field for more information. Each failed item should have its own "</span>
 <span class="w">        </span><span class="s2">"list of specific errors."</span>
 <span class="w">    </span><span class="err">)</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">    </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
 <span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
@@ -754,7 +753,8 @@ c. the <code class="docutils literal notranslate"><span class="pre">all_or_none<
 <span class="w">                </span><span class="cm">/* ... */</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">]</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"imported_records"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -765,7 +765,7 @@ c. the <code class="docutils literal notranslate"><span class="pre">all_or_none<
 <blockquote>
 <div><p>NOT YET IMPLEMENTED. At present the <code class="docutils literal notranslate"><span class="pre">all_or_none</span></code> request parameter will always be “true”.</p>
 </div></blockquote>
-<p>If only some of the works to be imported are malformed or invalid, and the <code class="docutils literal notranslate"><span class="pre">all_or_none</span></code> request parameter is set to “false”, the response will be <code class="docutils literal notranslate"><span class="pre">207</span> <span class="pre">Multi-Status</span></code>. In this case the response will be shaped much like the successful and unsuccessful responses described above, but there will be items in <em>both</em> the <code class="docutils literal notranslate"><span class="pre">data</span></code> and <code class="docutils literal notranslate"><span class="pre">errors</span></code> arrays. The items in the <code class="docutils literal notranslate"><span class="pre">data</span></code> array will be works that were successfully created, and the items in the <code class="docutils literal notranslate"><span class="pre">errors</span></code> array will be works that failed to be created.</p>
+<p>If only some of the works to be imported are malformed or invalid, and the <code class="docutils literal notranslate"><span class="pre">all_or_none</span></code> request parameter is set to “false”, the response will be <code class="docutils literal notranslate"><span class="pre">207</span> <span class="pre">Multi-Status</span></code>. In this case the response will be shaped much like the successful and unsuccessful responses described above, but there will be items in <em>both</em> the <code class="docutils literal notranslate"><span class="pre">imported_records</span></code> and <code class="docutils literal notranslate"><span class="pre">errors</span></code> arrays. The items in the <code class="docutils literal notranslate"><span class="pre">imported_records</span></code> array will be works that were successfully created, and the items in the <code class="docutils literal notranslate"><span class="pre">errors</span></code> array will be works that failed to be created.</p>
 <p>The response will be shaped like this:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"multi_status"</span><span class="p">,</span>
@@ -774,23 +774,6 @@ c. the <code class="docutils literal notranslate"><span class="pre">all_or_none<
 <span class="w">        </span><span class="s2">"list of failed records in the 'errors' field for more information. Each failed "</span>
 <span class="w">        </span><span class="s2">"item should have its own list of specific errors."</span>
 <span class="w">    </span><span class="err">)</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567891"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"source_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xxx1234567891"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"record_url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://works.hcommons.org/records/1234567891"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="nt">"file1.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"success"</span><span class="p">,</span><span class="w"> </span><span class="p">[]],</span>
-<span class="w">                </span><span class="nt">"file2.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"success"</span><span class="p">,</span><span class="w"> </span><span class="p">[]]</span>
-<span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="nt">"collection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">            </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="cm">/* ... */</span>
-<span class="w">            </span><span class="p">}</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
 <span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
@@ -809,6 +792,23 @@ c. the <code class="docutils literal notranslate"><span class="pre">all_or_none<
 <span class="w">                </span><span class="cm">/* ... */</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">        </span><span class="p">},</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"imported_records"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567891"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"source_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xxx1234567891"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"record_url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://works.hcommons.org/records/1234567891"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"file1.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"success"</span><span class="p">,</span><span class="w"> </span><span class="p">[]],</span>
+<span class="w">                </span><span class="nt">"file2.pdf"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"success"</span><span class="p">,</span><span class="w"> </span><span class="p">[]]</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nt">"collection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">            </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="cm">/* ... */</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
@@ -827,7 +827,6 @@ c. the <code class="docutils literal notranslate"><span class="pre">all_or_none<
 <span class="w">        </span><span class="s2">"in the 'errors' field for more information. Each failed item should have its own "</span>
 <span class="w">        </span><span class="s2">"list of specific errors."</span>
 <span class="w">    </span><span class="err">)</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">    </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
 <span class="w">            </span><span class="nt">"item_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
@@ -882,7 +881,8 @@ c. the <code class="docutils literal notranslate"><span class="pre">all_or_none<
 <span class="w">                </span><span class="cm">/* ... */</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">]</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"imported_records"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -973,7 +973,7 @@ c. the <code class="docutils literal notranslate"><span class="pre">all_or_none<
 <li><a class="reference internal" href="#kc-accounts-for-work-owners">KC accounts for work owners</a></li>
 <li><a class="reference internal" href="#email-notifications-for-work-owners">Email notifications for work owners</a></li>
 <li><a class="reference internal" href="#identifying-the-work-for-import">Identifying the work for import</a></li>
-<li><a class="reference internal" href="#files-when-re-importing-an-existing-work-no-updates-is-false">Files when re-importing an existing work (<code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code>)</a></li>
+<li><a class="reference internal" href="#import-existing-record-files">Files when re-importing an existing work (<code class="docutils literal notranslate"><span class="pre">no_updates</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;false&quot;</span></code>)</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#example-import-request">Example import request</a><ul>
