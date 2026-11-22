@@ -42,7 +42,8 @@ verification — useful for local mock servers and tests.
 
 ### ImportClient results and errors
 
-- **`ImportResult`** — `status_code`, `data`, `errors`, `message`, `body`,
+- **`ImportResult`** — `status_code`, `data` (from response
+  `imported_records`), `errors`, `message`, `body`,
   `ok` (True for HTTP 201 or 207), `exit_code`
 - **`import_works_or_raise(...)`** — same as `import_works`, but raises
   `ImportAPIError` when `ok` is False

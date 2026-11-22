@@ -134,7 +134,7 @@ def register_mock_apis(
         context.status_code = import_status
         if import_status == 201:
             return {
-                "data": [
+                "imported_records": [
                     {
                         "item_index": 0,
                         "record_id": f"rec-{slug}",
@@ -146,7 +146,7 @@ def register_mock_apis(
             }
         if import_status == 207:
             return {
-                "data": [{"item_index": 0, "record_id": "ok"}],
+                "imported_records": [{"item_index": 0, "record_id": "ok"}],
                 "errors": [
                     {
                         "item_index": 1,
@@ -161,7 +161,7 @@ def register_mock_apis(
                 "message": "Partial",
             }
         return {
-            "data": [],
+            "imported_records": [],
             "errors": [
                 {
                     "item_index": 0,
@@ -258,7 +258,7 @@ def register_import_endpoint(
         )
     else:
         body = response_body or {
-            "data": [
+            "imported_records": [
                 {
                     "item_index": 0,
                     "record_id": "test-123",

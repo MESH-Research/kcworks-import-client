@@ -9,7 +9,7 @@ def test_format_201_with_records_and_urls():
     """201 formatting lists records and URLs."""
     text = _format_response_message(
         {
-            "data": [
+            "imported_records": [
                 {
                     "item_index": 0,
                     "record_id": "r1",
@@ -31,7 +31,9 @@ def test_format_207_error_variants():
     """207 formatting covers field, validation, upload, and fallback errors."""
     text = _format_response_message(
         {
-            "data": [{"item_index": 0, "record_id": "ok", "record_url": "N/A"}],
+            "imported_records": [
+                {"item_index": 0, "record_id": "ok", "record_url": "N/A"}
+            ],
             "errors": [
                 {
                     "item_index": 1,
@@ -58,7 +60,7 @@ def test_format_400_403_500_and_unknown():
     """Error status formatting and unknown-status fallback."""
     t403 = _format_response_message(
         {
-            "data": [],
+            "imported_records": [],
             "errors": [
                 {
                     "item_index": 0,
@@ -78,15 +80,19 @@ def test_format_400_403_500_and_unknown():
     assert "Access denied" in t403
     assert "Import failed" in t403
 
-    t400 = _format_response_message({"data": [], "errors": [], "message": ""}, 400)
+    t400 = _format_response_message(
+        {"imported_records": [], "errors": [], "message": ""}, 400
+    )
     assert "Bad request" in t400
 
-    t500 = _format_response_message({"data": [], "errors": [], "message": ""}, 500)
+    t500 = _format_response_message(
+        {"imported_records": [], "errors": [], "message": ""}, 500
+    )
     assert "Server error" in t500
 
     other = _format_response_message(
         {
-            "data": [{"record_id": "z"}],
+            "imported_records": [{"record_id": "z"}],
             "errors": [{"item_index": 1}],
             "message": "hmm",
         },

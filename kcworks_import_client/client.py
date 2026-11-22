@@ -358,16 +358,16 @@ class ImportClient:
         if not isinstance(body, Mapping):
             return ImportResult(status_code=response.status_code, body=body)
 
-        data = body.get("data") or []
+        imported_records = body.get("imported_records") or []
         errors = body.get("errors") or []
         message = body.get("message") or ""
-        if not isinstance(data, list):
-            data = []
+        if not isinstance(imported_records, list):
+            imported_records = []
         if not isinstance(errors, list):
             errors = []
         return ImportResult(
             status_code=response.status_code,
-            data=list(data),
+            data=list(imported_records),
             errors=list(errors),
             message=str(message),
             body=dict(body),

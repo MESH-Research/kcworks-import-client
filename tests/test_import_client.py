@@ -85,7 +85,7 @@ def test_import_client_passes_all_flags(sample_files_dir, monkeypatch, requests_
         "http://127.0.0.1:8000/api/import/my-collection",
         json={
             "status": "success",
-            "data": [{"record_id": "abc", "item_index": 0}],
+            "imported_records": [{"record_id": "abc", "item_index": 0}],
             "errors": [],
             "message": "ok"
         },
@@ -133,7 +133,12 @@ def test_import_works_or_raise_on_403(sample_files_dir, monkeypatch, requests_mo
 
     requests_mock.post(
         "http://kcworks.test/api/import/my-collection",
-        json={"status": "error", "data": [], "errors": [], "message": "denied"},
+        json={
+            "status": "error",
+            "imported_records": [],
+            "errors": [],
+            "message": "denied",
+        },
         status_code=403,
     )
     monkeypatch.setenv("KCWORKS_IMPORT_API_URL", "http://kcworks.test/api/import")
@@ -182,7 +187,7 @@ def test_import_client_path_metadata_file(
 
     requests_mock.post(
         "http://kcworks.test/api/import/c",
-        json={"data": [], "errors": [], "message": "ok"},
+        json={"imported_records": [], "errors": [], "message": "ok"},
         status_code=201,
     )
     monkeypatch.setenv("KCWORKS_IMPORT_API_URL", "http://kcworks.test/api/import")

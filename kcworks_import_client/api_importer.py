@@ -120,7 +120,6 @@ import json
 import os
 import sys
 import threading
-from datetime import datetime
 from typing import Any
 
 from .client import ImportClient, guess_mime_type, resolve_output_file_path
@@ -314,7 +313,7 @@ def _format_response_message(response_json: dict[str, Any], status_code: int) ->
     Returns:
         Formatted human-readable message string.
     """
-    data = response_json.get("data", [])
+    imported_records = response_json.get("imported_records", [])
     errors = response_json.get("errors", [])
     message = response_json.get("message", "")
 
@@ -322,9 +321,11 @@ def _format_response_message(response_json: dict[str, Any], status_code: int) ->
 
     if status_code == 201:
         lines.append("")
-        if data:
-            lines.append(f"Successfully imported {len(data)} record(s):")
-            for item in data:
+        if imported_records:
+            lines.append(
+                f"Successfully imported {len(imported_records)} record(s):"
+            )
+            for item in imported_records:
                 record_id = item.get("record_id", "N/A")
                 record_url = item.get("record_url", "N/A")
                 item_index = item.get("item_index", "N/A")
@@ -337,9 +338,11 @@ def _format_response_message(response_json: dict[str, Any], status_code: int) ->
     elif status_code == 207:
         lines.append("⚠ Partial success - some records imported, some failed")
         lines.append("")
-        if data:
-            lines.append(f"Successfully imported {len(data)} record(s):")
-            for item in data:
+        if imported_records:
+            lines.append(
+                f"Successfully imported {len(imported_records)} record(s):"
+            )
+            for item in imported_records:
                 record_id = item.get("record_id", "N/A")
                 record_url = item.get("record_url", "N/A")
                 item_index = item.get("item_index", "N/A")
@@ -411,8 +414,10 @@ def _format_response_message(response_json: dict[str, Any], status_code: int) ->
         lines.append(f"Response status: {status_code}")
         if message:
             lines.append(f"Message: {message}")
-        if data:
-            lines.append(f"Successfully imported: {len(data)} record(s)")
+        if imported_records:
+            lines.append(
+                f"Successfully imported: {len(imported_records)} record(s)"
+            )
         if errors:
             lines.append(f"Failed: {len(errors)} record(s)")
 
@@ -612,7 +617,7 @@ def _print_startup_info(
     if output_path and not suppress_reports:
         lines.append(f"Will save import report as a JSON file at {output_path}")
     elif suppress_reports:
-        lines.append(f"Will not save import report to file (suppressed).")
+        lines.append("Will not save import report to file (suppressed).")
     lines.append("=" * 70)
     lines.append("")
     print("\n".join(lines))

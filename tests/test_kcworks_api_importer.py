@@ -231,7 +231,7 @@ def _run_cli(monkeypatch, capsys, args, *, env=None) -> SimpleNamespace:
 
 def _default_success_body():
     return {
-        "data": [
+        "imported_records": [
             {
                 "item_index": 0,
                 "record_id": "test-123",
@@ -288,8 +288,8 @@ def test_script_success_with_mock(
     reports = list(tmp_path.glob("kcworks_import_*.json"))
     assert len(reports) == 1
     data = json.loads(reports[0].read_text())
-    assert "data" in data and len(data["data"]) == 1
-    assert data["data"][0].get("record_id") == "test-123"
+    assert "imported_records" in data and len(data["imported_records"]) == 1
+    assert data["imported_records"][0].get("record_id") == "test-123"
 
 
 def test_script_passes_collection_id_to_request(
@@ -468,7 +468,7 @@ def test_script_prints_success_output_for_201(
 ):
     """For 201 response, prints Import Result, message, and record info to stdout."""
     body = {
-        "data": [
+        "imported_records": [
             {
                 "item_index": 0,
                 "record_id": "r1",
@@ -523,7 +523,7 @@ def test_script_prints_partial_success_output_for_207(
 ):
     """For 207 response, prints partial success, successes, and failures to stdout."""
     body = {
-        "data": [
+        "imported_records": [
             {
                 "item_index": 0,
                 "record_id": "ok1",
@@ -742,7 +742,7 @@ def test_import_works_sends_id_scheme_and_notify_form_fields(
     import_url = f"{DEFAULT_HOST}/api/import"
     requests_mock.post(
         f"{import_url}/my-coll",
-        json={"data": [], "message": "ok"},
+        json={"imported_records": [], "message": "ok"},
         status_code=201,
     )
     monkeypatch.setenv("KCWORKS_IMPORT_API_URL", import_url)

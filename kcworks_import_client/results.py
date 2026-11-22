@@ -12,7 +12,8 @@ class ImportResult:
 
     Attributes:
         status_code: HTTP status code from the import endpoint.
-        data: Successfully imported record descriptors from the response.
+        data: Successfully imported record descriptors from the response
+            `imported_records` field.
         errors: Per-record error objects from the response.
         message: Top-level message from the response (if any).
         body: Full parsed JSON body, or raw text when the response was not JSON.
